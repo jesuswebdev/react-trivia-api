@@ -3,7 +3,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const bcrypt = require('bcrypt');
-const saltRounds = 10;
+const saltRounds = 12;
 
 const UserSchema = new Schema({
     name: { type: String, required: true },
@@ -12,7 +12,7 @@ const UserSchema = new Schema({
     games_played: { type: Number, default: 0 },
     coins: { type: Number, default: 0 },
     created: { type: Date, default: Date.now() },
-    account_type: { type: mongoose.Schema.ObjectId, ref: 'Profile' }
+    account_type: { type: mongoose.Schema.ObjectId, ref: 'Profile', required: true }
 })
 
 UserSchema.pre('save', async function() {
@@ -25,9 +25,12 @@ UserSchema.pre('save', async function() {
 
 UserSchema.methods.validatePassword = async (password, userPassword) => {
     if (userPassword !== undefined) {
-        return await bcrypt.compare(password, userPassword)
+        try {
+            return await bcrypt.compare(password, userPassword);
+        } catch (err) {
+            return err;
+        }
     }
-
     return false;
 }
 

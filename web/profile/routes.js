@@ -5,6 +5,7 @@ module.exports = {
     name: 'profile-routes',
     register: async (server, options) => {
 
+        //  POST /
         server.route({
             method: 'POST',
             path: '/',
@@ -39,6 +40,7 @@ module.exports = {
             }
         });
         
+        //  GET /
         server.route({
             method: 'GET',
             path: '/',
@@ -56,6 +58,7 @@ module.exports = {
             }
         });
 
+        //  GET /{id}
         server.route({
             method: 'GET',
             path: '/{id}',
@@ -76,6 +79,7 @@ module.exports = {
             }
         });
 
+        //  PUT /{id}
         server.route({
             method: 'PUT',
             path: '/{id}',
@@ -113,6 +117,7 @@ module.exports = {
             }
         });
 
+        //  DELETE /{id}
         server.route({
             method: 'DELETE',
             path: '/{id}',

@@ -3,6 +3,8 @@
 const Mongoose = require('mongoose');
 const { db } = require('./config');
 
+Mongoose.set('useFindAndModify', false);
+
 module.exports = () => {
     Mongoose.connect(db.uri, { useNewUrlParser: true });
     Mongoose.connection.on('error', console.error.bind(console, 'connection error'));

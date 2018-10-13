@@ -5,3 +5,7 @@ exports.db = {
     user: '',
     password: ''
 }
+
+exports.iron = {
+    password: 'ironpassworddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd'
+}

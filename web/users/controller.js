@@ -3,25 +3,25 @@
 const Boom = require('boom');
 const Iron = require('iron');
 const User = require('./model');
+const Profile = require('mongoose').model('Profile');
 const {iron} = require('../../config/config');
 
 exports.create = async (req, h) => {
 
     let foundUser = await User.findOne({email: req.payload.email});
-    if (foundUser !== null) {
+    if (foundUser) {
         return Boom.conflict('Correo electronico en uso');
     }
 
     let createdUser = null;
 
     try {
-        createdUser = new User(req.payload);
-        createdUser = createdUser.save()
+        createdUser = await User(req.payload).save();
     } catch (err) {
         return Boom.internal();
     }
     
-    return createdUser;
+    return h.response(createdUser).code(201);
 };
 
 exports.find = async (req, h) => {
@@ -58,8 +58,7 @@ exports.login = async (req, h) => {
         if (!foundUser) {
             return Boom.badData('Combinacion de email/contraseña incorrectos');
         }
-
-        let same = foundUser.validatePassword(req.payload.password, foundUser.password);
+        let same = await foundUser.validatePassword(req.payload.password, foundUser.password);
         if (!same) {
             return Boom.badData('Combinacion de email/contraseña incorrectos');
         }
@@ -67,9 +66,12 @@ exports.login = async (req, h) => {
         return Boom.internal();
     }
 
-    foundUser = await foundUser.populate('account_type')
+    foundUser = await foundUser.populate('account_type');
+    const { type: role } = await Profile.findOne({_id: foundUser.account_type});
 
+    foundUser.password = undefined;
     let token = await Iron.seal(foundUser, iron.password, Iron.defaults);
+    foundUser = {...foundUser._doc, role};
 
     return {user: foundUser, token}
 }
@@ -83,13 +85,12 @@ exports.register = async (req, h) => {
     let createdUser = null;
 
     try {
-        createdUser = new User(req.payload);
-        createdUser = await createdUser.save();
+        createdUser = await User(req.payload).save();
     } catch (err) {
         return Boom.internal();
     }
 
-    return createdUser;
+    return h.response(createdUser).code(201);
 }
 
 exports.token = async (req, h) => {

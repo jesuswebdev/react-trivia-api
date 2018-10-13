@@ -5,16 +5,34 @@ module.exports = {
     name: 'user-routes',
     register: async (server, options) => {
 
+        //  GET /
         server.route({
             method: 'GET',
             path: '/',
             handler: User.find
         });
         
+        //  POST /
         server.route({
             method: 'POST',
             path: '/',
-            handler: User.create
+            handler: User.create,
+            options: {
+                auth: {
+                    access: {
+                        scope: ['create:users']
+                    }
+                },
+                validate: {
+                    payload: Joi.object({
+                        name: Joi.string().min(6).trim().required(),
+                        email: Joi.string().email().trim().required(),
+                        password: Joi.string().min(6).trim().required(),
+                        account_type: Joi.string().alphanum().trim().length(24).required()
+                    }),
+                    query: false
+                }
+            }
         });
         
         server.route({
@@ -23,6 +41,7 @@ module.exports = {
             handler: User.findById
         });
 
+        //register
         server.route({
             method: 'POST',
             path: '/register',
@@ -33,13 +52,15 @@ module.exports = {
                     payload: Joi.object({
                         name: Joi.string().min(6).trim().required(),
                         email: Joi.string().email().trim().required(),
-                        password: Joi.string().min(6).trim().required()
+                        password: Joi.string().min(6).trim().required(),
+                        account_type: Joi.string().alphanum().trim().length(24).required()
                     }),
                     query: false
                 }
             }
         });
 
+        // login
         server.route({
             method: 'POST',
             path: '/login',

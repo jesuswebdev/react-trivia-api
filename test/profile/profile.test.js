@@ -206,24 +206,23 @@ experiment('Profile Route Test: ', () => {
         })
 
         test('returns an array of profiles', async () => {
-            let prof = new Profile({
+            await Profile({
                 title: 'Test testerino2',
                 type: 'test-prof123i3123123le',
                 permissions: {
                     create: ['create:test'],
                     read: ['read:test']
                 }
-            })
-            await prof.save();
-            prof = new Profile({
+            }).save();
+            
+            await Profile({
                 title: 'Test testerino33',
                 type: 'test-prof123ile33',
                 permissions: {
                     create: ['create:test'],
                     read: ['read:test']
                 }
-            })
-            await prof.save();
+            }).save();
 
             const {statusCode, result} = await server.inject(options);
             expect(statusCode).to.be.equal(200);
