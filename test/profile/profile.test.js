@@ -3,7 +3,7 @@
 process.env.NODE_ENV = 'test';
 process.env.PORT = 4000;
 
-const { test, experiment, before, beforeEach } = exports.lab = require('lab').script()
+const { test, experiment, before, beforeEach, after } = exports.lab = require('lab').script()
 const { expect } = require('code');
 const server = require('../../server');
 const Profile = require('mongoose').model('Profile');
@@ -11,224 +11,160 @@ const Profile = require('mongoose').model('Profile');
 experiment('Profile Route Test: ', () => {
 
     before(async () => {
-        await Profile.remove({});
+        await Profile.deleteMany({});
     })
 
-    experiment('Creating a new profile:', () => {
-        
-        let options = {
-            method: 'POST',
-            url: '/profiles',
-            credentials: {
-                scope: ['write:profile']
-            }
-        }
+    after(async () => {
+        await Profile.deleteMany({});
+    })
 
-        test('fails when there is no title', async () => {
-            options.payload = {
-                type: 'test',
-                permissions: {
-                    write: ['write:test'],
-                    read: ['read:test']
+    experiment('POST /profiles:', () => {
+        
+        let options = null;
+
+        beforeEach(async () => {
+            await Profile.deleteMany({});
+            options = {
+                method: 'POST',
+                url: '/profiles',
+                credentials: {
+                    scope: ['create:profile']
+                },
+                payload: {
+                    title: 'Test title',
+                    type: 'Test type',
+                    permissions: {
+                        create: ['create:test'],
+                        read: ['read:test'],
+                        update: ['update:test'],
+                        delete: ['delete:test']
+                    }
                 }
             }
+        })
+
+        test('fails when there is no title', async () => {
+            options.payload.title = '';
             const {result} = await server.inject(options);
             expect(result.statusCode).to.be.equal(400);
         })
 
         test('fails when the title is too short', async () => {
-            options.payload = {
-                title: 'asd',
-                type: 'test',
-                permissions: {
-                    write: ['write:test'],
-                    read: ['read:test']
-                }
-            }
+            options.payload.title = 'asd';
             const {result} = await server.inject(options);
             expect(result.statusCode).to.be.equal(400);
         })
         
         test('fails when there is no type', async () => {
-            options.payload = {
-                title: 'Test title',
-                permissions: {
-                    write: ['write:test'],
-                    read: ['read:test']
-                }
-            }
+            options.payload.type = '';
             const {result} = await server.inject(options);
             expect(result.statusCode).to.be.equal(400);
         })
 
         test('fails when the type is too short', async () => {
-            options.payload = {
-                title: 'Test title',
-                type: 'asd',
-                permissions: {
-                    write: ['write:test'],
-                    read: ['read:test']
-                }
-            }
+            options.payload.type = 'asd';
             const {result} = await server.inject(options);
             expect(result.statusCode).to.be.equal(400);
         })
 
         test('fails when there are no permissions', async () => {
-            options.payload = {
-                title: 'Test title',
-                type: 'test type'
-            }
-            const {result} = await server.inject(options);
-            expect(result.statusCode).to.be.equal(400);
+            options.payload.permissions = [];
+            const {statusCode} = await server.inject(options);
+            expect(statusCode).to.be.equal(400);
         })
 
-        test('fails when write permissions array is empty', async () => {
-            options.payload = {
-                title: 'Test title',
-                type: 'test type',
-                permissions: {
-                    write: []
-                }
-            }
-            const {result} = await server.inject(options);
-            expect(result.statusCode).to.be.equal(400);
+        test('fails when create permissions array is empty', async () => {
+            options.payload.permissions = {create: []};
+            const {statusCode} = await server.inject(options);
+            expect(statusCode).to.be.equal(400);
         })
 
         test('fails when read permissions array is empty', async () => {
-            options.payload = {
-                title: 'Test title',
-                type: 'test type',
-                permissions: {
-                    read: []
-                }
-            }
-            const {result} = await server.inject(options);
-            expect(result.statusCode).to.be.equal(400);
+            options.payload.permissions = {read: []};
+            const {statusCode} = await server.inject(options);
+            expect(statusCode).to.be.equal(400);
         })
 
-        test('fails when write permissions doesnt start with write:', async () => {
-            options.payload = {
-                title: 'Test title',
-                type: 'test type',
-                permissions: {
-                    write: ['write: hola', 'wrte: asdasd']
-                }
-            }
-            const {result} = await server.inject(options);
-            expect(result.statusCode).to.be.equal(400);
+        test('fails when update permissions array is empty', async () => {
+            options.payload.permissions = {update: []};
+            const {statusCode} = await server.inject(options);
+            expect(statusCode).to.be.equal(400);
+        })
+
+        test('fails when delete permissions array is empty', async () => {
+            options.payload.permissions = {delete: []};
+            const {statusCode} = await server.inject(options);
+            expect(statusCode).to.be.equal(400);
+        })
+
+        test('fails when create permissions doesnt start with create:', async () => {
+            options.payload.permissions.create = ['create: hola', 'crate: asdasd'];
+            const {statusCode} = await server.inject(options);
+            expect(statusCode).to.be.equal(400);
         })
 
         test('fails when read permissions doesnt start with read:', async () => {
-            options.payload = {
-                title: 'Test title',
-                type: 'test type',
-                permissions: {
-                    read: ['read:asdasd', 'red: asdasd']
-                }
-            }
-            const {result} = await server.inject(options);
-            expect(result.statusCode).to.be.equal(400);
+            options.payload.permissions.read = ['read:asdasd', 'red: asdasd'];
+            const {statusCode} = await server.inject(options);
+            expect(statusCode).to.be.equal(400);
+        })
+
+        test('fails when update permissions doesnt start with update:', async () => {
+            options.payload.permissions.update = ['update:asdasd', 'updte: asdasd'];
+            const {statusCode} = await server.inject(options);
+            expect(statusCode).to.be.equal(400);
+        })
+
+        test('fails when delete permissions doesnt start with delete:', async () => {
+            options.payload.permissions.delete = ['delete:asdasd', 'delte: asdasd'];
+            const {statusCode} = await server.inject(options);
+            expect(statusCode).to.be.equal(400);
         })
 
         test('fails when a query is present', async () => {
-            options.payload = {
-                title: 'Test title',
-                type: 'test type',
-                permissions: {
-                    read: ['read:asdasd', 'read: asdasd']
-                }
-            }
-            options.url = '/profiles?test=test';
+            options.url += '?test=test';
             const {result} = await server.inject(options);
             expect(result.statusCode).to.be.equal(400);
         })
 
-        before(async () => {
-            const newProfile = new Profile({
-                title: 'Test Profile',
-                type: 'test-profile',
-                permissions: {
-                    write: ['write:test']
-                }
-            })
-            await newProfile.save();
-        });
-
         test('fails when there is a duplicate title in the database', async () => {
-            options.payload = {
-                title: 'Test Profile',
-                type: 'test-profile',
+            await Profile({
+                title: 'Test title',
+                type: 'Test type',
                 permissions: {
-                    write: ['write:test'],
-                    read: ['read:test']
+                    create: ['create:test']
                 }
-            }
-            options.url = '/profiles'
-
-            const {result} = await server.inject(options);
-            expect(result.statusCode).to.be.equal(409);
+            }).save();
+            const {statusCode} = await server.inject(options);
+            expect(statusCode).to.be.equal(409);
         })
 
         test('fails when there is a duplicate type in the database', async () => {
-            options.payload = {
-                title: 'Test Profile',
-                type: 'test-profile',
+            await Profile({
+                title: 'Test title',
+                type: 'Test type',
                 permissions: {
-                    write: ['write:test'],
-                    read: ['read:test']
+                    create: ['create:test']
                 }
-            }
+            }).save();
             const {result} = await server.inject(options);
             expect(result.statusCode).to.be.equal(409);
         })
 
-        test('admin can create a profile', async () => {
-            options.payload = {
-                title: 'Test testerino',
-                type: 'test-prof123ile',
-                permissions: {
-                    write: ['write:test'],
-                    read: ['read:test']
-                }
-            }
-
+        test('success when create:profile permission is set', async () => {
             const {statusCode} = await server.inject(options);
-            expect(statusCode).to.be.equal(200);
+            expect(statusCode).to.be.equal(201);
         })
 
-        test('user cannot create a profile', async () => {
-            options.payload = {
-                title: 'Test Profi321le',
-                type: 'test-profasdasdile',
-                permissions: {
-                    write: ['write:test'],
-                    read: ['read:test']
-                }
-            }
-            options.credentials = {
-                scope: []
-            }
+        test('fails when write:profile permission is not present', async () => {
+            options.credentials.scope = [];
             const {statusCode} = await server.inject(options);
             expect(statusCode).to.be.equal(403);
         })
 
         test('returns a profile object when successful', async () => {
-            options.payload = {
-                title: 'Testerino',
-                type: 'testerino',
-                permissions: {
-                    write: ['write:testerino'],
-                    read: ['read:testerino']
-                }
-            }
-
-            options.credentials = {
-                scope: ['write:profile']
-            }
-
             const {statusCode, result} = await server.inject(options);
-            expect(statusCode).to.be.equal(200);
+            expect(statusCode).to.be.equal(201);
             expect(result).to.be.an.object();
             expect(result.title).to.be.a.string();
             expect(result.type).to.be.a.string();
@@ -237,7 +173,7 @@ experiment('Profile Route Test: ', () => {
         })
     })
     
-    experiment('List profiles', () => {
+    experiment('GET /profiles', () => {
 
         let options = {};
         
@@ -251,13 +187,13 @@ experiment('Profile Route Test: ', () => {
             }
         })
 
-        test('admin can fetch the profiles', async () => {
+        test('success when read:profile permission is set', async () => {
             const {statusCode, result} = await server.inject(options);
             expect(statusCode).to.be.equal(200);
             expect(result).to.be.an.object();
         })
 
-        test('user cannot fetch the profiles', async () => {
+        test('fails when read:profile permission is not present', async () => {
             options.credentials = { scope: [] }
             const {statusCode} = await server.inject(options);
             expect(statusCode).to.be.equal(403);
@@ -269,6 +205,256 @@ experiment('Profile Route Test: ', () => {
             expect(result.profile_count).to.be.a.number();
         })
 
+        test('returns an array of profiles', async () => {
+            let prof = new Profile({
+                title: 'Test testerino2',
+                type: 'test-prof123i3123123le',
+                permissions: {
+                    create: ['create:test'],
+                    read: ['read:test']
+                }
+            })
+            await prof.save();
+            prof = new Profile({
+                title: 'Test testerino33',
+                type: 'test-prof123ile33',
+                permissions: {
+                    create: ['create:test'],
+                    read: ['read:test']
+                }
+            })
+            await prof.save();
 
+            const {statusCode, result} = await server.inject(options);
+            expect(statusCode).to.be.equal(200);
+            expect(result).to.be.an.object();
+            expect(result).to.contain(['profiles', 'profile_count']);
+            expect(result.profiles).to.be.an.array();
+            expect(result.profile_count).to.be.a.number();
+        })
+
+
+    })
+
+    experiment('GET /profiles/{id}', async () => {
+
+        let options = {};
+        let profileId = null;
+
+        beforeEach(async () => {
+            await Profile.deleteMany({});
+            const { _id } = await Profile({
+                title: 'Testerino',
+                type: 'testerino',
+                permissions: {
+                    create: ['create:testerino'],
+                    read: ['read:testerino']
+                }
+            }).save();
+
+            profileId = _id;
+
+            options = {
+                method: 'GET',
+                url: `/profiles/${_id}`,
+                credentials: {
+                    scope: ['read:profile/id']
+                }
+            }
+        })
+
+        test('success when read:profile/id permission is set', async () => {
+            const {statusCode} = await server.inject(options);
+            expect(statusCode).to.be.equal(200);
+        })
+
+        test('fails when read:profile/id permission is not present', async () => {
+            options.credentials.scope = [];
+            const {statusCode} = await server.inject(options);
+            expect(statusCode).to.be.equal(403);
+
+        })
+
+        test('fails when the url has a query', async () => {
+            options.url += '?query=query';
+            const {statusCode} = await server.inject(options);
+            expect(statusCode).to.be.equal(400);
+        })
+
+        test('returns a profile object', async () => {
+            const {statusCode, result} = await server.inject(options);
+            expect(statusCode).to.be.equal(200);
+            expect(result).to.be.an.object();
+            expect(result.title).to.exist().and.to.be.a.string();
+            expect(result.type).to.exist().and.to.be.a.string();
+            expect(result.permissions).to.exist().and.to.be.an.object();
+        })
+
+        test('returns error when the {id} is not valid', async () => {
+            options.url += 'asdasd';
+            const {statusCode} = await server.inject(options);
+            expect(statusCode).to.be.equal(400);
+        })
+
+        test('returns 404 when the resource is not found', async () => {
+            await Profile.deleteOne({_id: profileId});
+            const {statusCode} = await server.inject(options);
+            expect(statusCode).to.be.equal(404);
+        })
+    })
+
+    experiment('PUT /profiles/{id}', () => {
+
+        let options = {};
+        let profileId = null;
+
+        before(async () => {
+            await Profile.deleteMany({});
+            const { _id } = await Profile({
+                title: 'Testerino',
+                type: 'testerino',
+                permissions: {
+                    create: ['create:testerino'],
+                    read: ['read:testerino']
+                }
+            }).save();
+            profileId = _id;
+        })
+
+        beforeEach(() => {
+            options = {
+                method: 'PUT',
+                url: `/profiles/${profileId}`,
+                credentials: {
+                    scope: ['update:profile/id']
+                },
+                payload: {
+                    title: 'Testerino',
+                    type: 'testerino',
+                    permissions: {
+                        create: ['create:testerino'],
+                        read: ['read:testerino'],
+                        update: ['update:testerino']
+                    }
+                }
+            }
+        })
+        
+        test('allows the admin to update a profile', async () => {
+            const {statusCode} = await server.inject(options);
+            expect(statusCode).to.be.equal(200);
+        })
+
+        test('fails when create permissions doesnt start with create:', async () => {
+            options.payload.permissions = {
+                create: ['create: hola', 'crate: asdasd']
+            }
+            const {statusCode} = await server.inject(options);
+            expect(statusCode).to.be.equal(400);
+        })
+
+        test('fails when read permissions doesnt start with read:', async () => {
+            options.payload.permissions = {
+                read: ['read:asdasd', 'red: asdasd']
+            }
+            const {statusCode} = await server.inject(options);
+            expect(statusCode).to.be.equal(400);
+        })
+
+        test('fails when update permissions doesnt start with update:', async () => {
+            options.payload.permissions = {
+                update: ['update:asdasd', 'updte: asdasd']
+            }
+            const {statusCode} = await server.inject(options);
+            expect(statusCode).to.be.equal(400);
+        })
+
+        test('fails when delete permissions doesnt start with delete:', async () => {
+            options.payload.permissions = {
+                delete: ['delete:asdasd', 'delte: asdasd']
+            }
+            const {statusCode} = await server.inject(options);
+            expect(statusCode).to.be.equal(400);
+        })
+
+        test('returns error 403 when not authorized', async () => {
+            options.credentials = [];
+            const {statusCode} = await server.inject(options);
+            expect(statusCode).to.be.equal(403);
+        })
+
+        test('returns the updated profile', async () => {
+            options.payload = {
+                title: 'NOOOOOOOOOOOOOOOO'
+            }
+            
+            const {statusCode, result} = await server.inject(options);
+            expect(statusCode).to.be.equal(200);
+            expect(result.title).to.be.a.string().and.to.be.equal(options.payload.title);
+            expect(result.type).to.be.a.string();
+            expect(result.permissions).to.be.an.object();
+        })
+
+        test('returns error when the {id} is not valid', async () => {
+            options.url += 'asdasd';
+            const {statusCode} = await server.inject(options);
+            expect(statusCode).to.be.equal(400);
+        })
+
+        test('returns error 404 when the resource is not found', async () => {
+            await Profile.deleteOne({_id: profileId});
+            const {statusCode} = await server.inject(options);
+            expect(statusCode).to.be.equal(404);
+        })
+    })
+
+    experiment('DELETE /profiles/{id}', () => {
+
+        let options = {};
+        let profileId = null;
+
+        beforeEach(async () => {
+            await Profile.deleteMany({});
+            const { _id } = await Profile({
+                title: 'Testerino',
+                type: 'testerino',
+                permissions: {
+                    create: ['create:testerino'],
+                    read: ['read:testerino']
+                }
+            }).save();
+
+            profileId = _id;
+            options = {
+                method: 'DELETE',
+                url: `/profiles/${_id}`,
+                credentials: {
+                    scope: ['delete:profile/id']
+                }
+            }
+        })
+
+        test('allows the admin to delete a profile', async () => {
+            const {statusCode} = await server.inject(options);
+            expect(statusCode).to.be.equal(204);
+        })
+
+        test('returns 403 when not authorized', async () => {
+            options.credentials = [];
+            const {statusCode} = await server.inject(options);
+            expect(statusCode).to.be.equal(403)
+        })
+
+        test('returns 404 when the resource is not found', async () => {
+            await Profile.deleteOne({ _id: profileId });
+            const {statusCode} = await server.inject(options);
+            expect(statusCode).to.be.equal(404)
+        })
+
+        test('returns error when the {id} is not valid', async () => {
+            options.url += 'asdasd';
+            const {statusCode} = await server.inject(options);
+            expect(statusCode).to.be.equal(400);
+        })
     })
   })

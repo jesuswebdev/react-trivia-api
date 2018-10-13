@@ -23,7 +23,7 @@ exports.create = async (req, h) => {
         return Boom.internal();
     }
 
-    return createdProfile;
+    return h.response(createdProfile).code(201);
 };
 
 exports.find = async (req, h) => {
@@ -57,7 +57,27 @@ exports.findById = async (req, h) => {
 }
 
 exports.update = async (req, h) => {
+
+    let updatedProfile = null;
+    try {
+        updatedProfile = await Profile.findOneAndUpdate({_id: req.params.id}, { $set: { ...req.payload }}, {new: true});
+        if (!updatedProfile) {
+            return Boom.notFound();
+        }
+    } catch (err) {
+        return Boom.internal();
+    }
+    return updatedProfile;
 };
 
 exports.remove = async (req, h) => {
+    try {
+        let deletedProfile = await Profile.findByIdAndRemove(req.params.id);
+        if (!deletedProfile) {
+            return Boom.notFound();
+        }
+    } catch (err) {
+        return Boom.internal();
+    }
+    return h.response();
 };

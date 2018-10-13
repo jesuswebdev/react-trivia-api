@@ -46,8 +46,10 @@ module.exports = {
                         }
 
                         let permissions = [
-                            ...foundUser.account_type.permissions.write,
-                            ...foundUser.account_type.permissions.read
+                            ...foundUser.account_type.permissions.create,
+                            ...foundUser.account_type.permissions.read,
+                            ...foundUser.account_type.permissions.update,
+                            ...foundUser.account_type.permissions.delete
                         ]
 
                         credenciales = {
