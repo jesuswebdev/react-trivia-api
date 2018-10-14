@@ -12,4 +12,5 @@ module.exports = () => {
     
     require('../web/profile/model');
     require('../web/users/model');
+    require('../web/category/model');
 }

@@ -32,6 +32,12 @@ const init = async () => {
             routes: {
                 prefix: '/profiles'
             }
+        },
+        {
+            plugin: require('./web/category/routes'),
+            routes: {
+                prefix: '/category'
+            }
         }
     ]);
 
