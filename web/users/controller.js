@@ -25,36 +25,89 @@ exports.create = async (req, h) => {
 };
 
 exports.find = async (req, h) => {
-    return 'find user';
+    let foundUser = null;
+    let userCount = 0;
+
+    try {
+        foundUser = await User.find({}, { password: false });
+        userCount = await User.countDocuments();
+    } catch (err) {
+        return Boom.internal();
+    }
+
+    return { users: foundUser, user_count: userCount }
 };
 
 exports.findById = async (req, h) => {
 
     let foundUser = null;
+    
+    if (req.auth.credentials.role !== 'admin' && req.auth.credentials.id !== req.params.id) {
+        return Boom.forbidden();
+    }
 
     try {
-        foundUser = await User.findById(req.params.id).populate('account_type',);
+        foundUser = await User.findById(req.params.id, { password: false }).populate('account_type',);
+        if (!foundUser) {
+            return Boom.notFound('El usuario no existe');
+        }
     } catch (err) {
         return Boom.internal();
     }
 
     return foundUser;
-
 }
 
 exports.update = async (req, h) => {
-    return 'update user';
+    let updatedUser = null;
+
+    if (req.auth.credentials.id !== req.params.id && req.auth.credentials.role !== 'admin') {
+        return Boom.forbidden();
+    }
+    
+    try {
+        if (req.payload.email) {
+            const { _id } = await User.findOne({ email: req.payload.email });
+            if (_id !== req.params.id) {
+                return Boom.conflict();
+            }
+        }
+
+        updatedUser = await User.findOneAndUpdate({ _id: req.params.id }, { $set: { ...req.payload } }, { new: true, select: { password: false } });
+        if (!updatedUser) {
+            return Boom.notFound();
+        }
+    } catch (err) {
+        return Boom.internal();
+    }
+
+    return updatedUser;
 };
 
 exports.remove = async (req, h) => {
-    return 'remove user';
+    let deletedUser = null;
+
+    if (req.params.id === req.auth.credentials.id) {
+        return Boom.badData()
+    }
+
+    try {
+        deletedUser = await User.findOneAndRemove({ _id: req.params.id });
+        if (!deletedUser) {
+            return Boom.notFound();
+        }
+    } catch (err) {
+        return Boom.internal();
+    }
+
+    return h.response();
 };
 
 exports.login = async (req, h) => {
     let foundUser = null;
 
     try {
-        foundUser = await User.findOne({email: req.payload.email});
+        foundUser = await User.findOne({email: req.payload.email}).populate('account_type');
         if (!foundUser) {
             return Boom.badData('Combinacion de email/contraseña incorrectos');
         }
@@ -66,12 +119,67 @@ exports.login = async (req, h) => {
         return Boom.internal();
     }
 
-    foundUser = await foundUser.populate('account_type');
-    const { type: role } = await Profile.findOne({_id: foundUser.account_type});
+    let { _doc: { account_type: { permissions, type: role } } } = foundUser;
 
-    foundUser.password = undefined;
+    permissions = [
+        ...permissions.create,
+        ...permissions.read,
+        ...permissions.update,
+        ...permissions.delete
+    ].map(p => p.value);
+
+    foundUser = {
+        id: foundUser._id,
+        name: foundUser.name,
+        email: foundUser.email,
+        role,
+        permissions
+    }
+
     let token = await Iron.seal(foundUser, iron.password, Iron.defaults);
-    foundUser = {...foundUser._doc, role};
+    foundUser.permissions = undefined;
+
+    return {user: foundUser, token}
+}
+
+exports.adminLogin = async (req, h) => {
+    let foundUser = null;
+
+    try {
+        foundUser = await User.findOne({email: req.payload.email}).populate('account_type');
+        if (!foundUser) {
+            return Boom.badData('Combinacion de email/contraseña incorrectos');
+        }
+        let same = await foundUser.validatePassword(req.payload.password, foundUser.password);
+        if (!same) {
+            return Boom.badData('Combinacion de email/contraseña incorrectos');
+        }
+        if (foundUser.account_type.type !== 'admin') {
+            return Boom.notFound('El usuario no existe');
+        }
+    } catch (err) {
+        return Boom.internal();
+    }
+
+    let { _doc: { account_type: { permissions, type: role } } } = foundUser;
+
+    permissions = [
+        ...permissions.create,
+        ...permissions.read,
+        ...permissions.update,
+        ...permissions.delete
+    ].map(p => p.value);
+
+    foundUser = {
+        id: foundUser._id,
+        name: foundUser.name,
+        email: foundUser.email,
+        role,
+        permissions
+    }
+
+    let token = await Iron.seal(foundUser, iron.password, Iron.defaults);
+    foundUser.permissions = undefined;
 
     return {user: foundUser, token}
 }

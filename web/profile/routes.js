@@ -22,16 +22,32 @@ module.exports = {
                         type: Joi.string().min(4).trim().required(),
                         permissions: Joi.object({
                             create: Joi.array().min(1).items(
-                                Joi.string().lowercase().min(7).trim().regex(/^create:/)
+                                Joi.object({
+                                    description: Joi.string().min(4).trim().required(),
+                                    value: Joi.string().lowercase().min(7).trim().regex(/^create:/).required(),
+                                    active: Joi.bool().required()
+                                })
                             ),
                             read: Joi.array().min(1).items(
-                                Joi.string().lowercase().min(6).trim().regex(/^read:/)
+                                Joi.object({
+                                    description: Joi.string().min(4).trim().required(),
+                                    value: Joi.string().lowercase().min(7).trim().regex(/^read:/).required(),
+                                    active: Joi.bool().required()
+                                })
                             ),
                             update: Joi.array().min(1).items(
-                                Joi.string().lowercase().min(6).trim().regex(/^update:/)
+                                Joi.object({
+                                    description: Joi.string().min(4).trim().required(),
+                                    value: Joi.string().lowercase().min(7).trim().regex(/^update:/).required(),
+                                    active: Joi.bool().required()
+                                })
                             ),
                             delete: Joi.array().min(1).items(
-                                Joi.string().lowercase().min(6).trim().regex(/^delete:/)
+                                Joi.object({
+                                    description: Joi.string().min(4).trim().required(),
+                                    value: Joi.string().lowercase().min(7).trim().regex(/^delete:/).required(),
+                                    active: Joi.bool().required()
+                                })
                             )
                         }).required().or('create', 'read', 'update', 'delete')
                     }),
@@ -96,16 +112,32 @@ module.exports = {
                         type: Joi.string().trim().min(4),
                         permissions: Joi.object({
                             create: Joi.array().min(1).items(
-                                Joi.string().lowercase().min(7).trim().regex(/^create:/)
+                                Joi.object({
+                                    description: Joi.string().min(4).trim().required(),
+                                    value: Joi.string().lowercase().min(7).trim().regex(/^create:/).required(),
+                                    active: Joi.bool().required()
+                                })
                             ),
                             read: Joi.array().min(1).items(
-                                Joi.string().lowercase().min(6).trim().regex(/^read:/)
+                                Joi.object({
+                                    description: Joi.string().min(4).trim().required(),
+                                    value: Joi.string().lowercase().min(7).trim().regex(/^read:/).required(),
+                                    active: Joi.bool().required()
+                                })
                             ),
                             update: Joi.array().min(1).items(
-                                Joi.string().lowercase().min(6).trim().regex(/^update:/)
+                                Joi.object({
+                                    description: Joi.string().min(4).trim().required(),
+                                    value: Joi.string().lowercase().min(7).trim().regex(/^update:/).required(),
+                                    active: Joi.bool().required()
+                                })
                             ),
                             delete: Joi.array().min(1).items(
-                                Joi.string().lowercase().min(6).trim().regex(/^delete:/)
+                                Joi.object({
+                                    description: Joi.string().min(4).trim().required(),
+                                    value: Joi.string().lowercase().min(7).trim().regex(/^delete:/).required(),
+                                    active: Joi.bool().required()
+                                })
                             )
                         })
                     }).required(),

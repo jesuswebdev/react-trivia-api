@@ -4,7 +4,7 @@
   "description": "react trivia api",
   "main": "server.js",
   "scripts": {
-    "test": "lab --assert code --leaks",
+    "test": "lab --assert code --leaks --verbose",
     "start": "nodemon server"
   },
   "author": "jesuswebdev",

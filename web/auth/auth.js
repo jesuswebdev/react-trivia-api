@@ -16,7 +16,6 @@ module.exports = {
                 authenticate: async (req, h) => {
                     
                     let token = null;
-                    let credenciales = null;
                     let payload = null;
                     let auth = req.raw.req.headers.authorization || null;
                 
@@ -37,33 +36,26 @@ module.exports = {
                     catch (error) {
                         return Boom.badRequest('Token no válido'); 
                     }
+
+                    let credentials = null;
                     
                     try {
-                        let foundUser = await User.findById(payload._id);
+                        let foundUser = await User.findById(payload.id);
 
                         if (!foundUser) {
                             return Boom.unauthorized('Error de autenticación. El usuario no existe');
                         }
 
-                        let permissions = [
-                            ...foundUser.account_type.permissions.create,
-                            ...foundUser.account_type.permissions.read,
-                            ...foundUser.account_type.permissions.update,
-                            ...foundUser.account_type.permissions.delete
-                        ]
-
-                        credenciales = {
-                            name: foundUser.name,
-                            email: foundUser.email,
-                            scope: permissions,
-                            id: foundUser._id
+                        credentials = {
+                            ...payload,
+                            scope: payload.permissions
                         };
                     }
                     catch (error) {
                         return Boom.internal();
                     }
 
-                    return h.authenticated({ credentials: credenciales });
+                    return h.authenticated({ credentials });
                 }//authenticate
             };//return
         };//const userScheme
