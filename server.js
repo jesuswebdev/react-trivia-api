@@ -38,6 +38,12 @@ const init = async () => {
             routes: {
                 prefix: '/category'
             }
+        },
+        {
+            plugin: require('./web/questions/routes'),
+            routes: {
+                prefix: '/questions'
+            }
         }
     ]);
 
