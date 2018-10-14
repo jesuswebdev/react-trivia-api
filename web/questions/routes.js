@@ -5,6 +5,7 @@ module.exports = {
     name: 'question-routes',
     register: async (server, options) => {
 
+        //  POST /
         server.route({
             method: 'POST',
             path: '/',
@@ -25,12 +26,30 @@ module.exports = {
                             })
                         ).required(),
                         category: Joi.string().alphanum().trim().length(24).required(),
-                        difficulty: Joi.string().allow(['easy', 'medium', 'hard']).required(),
-                        tags: Joi.array().items(
-                            Joi.string()
-                        ),
-                        didYouKnow: Joi.string()
+                        difficulty: Joi.string().only(['easy', 'medium', 'hard']).required(),
+                        tags: Joi.array().min(1).items(
+                            Joi.string().min(4).strict()
+                        ).required(),
+                        didYouKnow: Joi.string().min(8)
                     }).options({ stripUnknown: true }),
+                    query: false
+                }
+            }
+        });
+
+        //  GET /
+        server.route({
+            method: 'GET',
+            path: '/',
+            handler: Question.find,
+            options: {
+                auth: {
+                    access: {
+                        scope: ['read:questions']
+                    }
+                },
+                validate: {
+                    payload: false,
                     query: false
                 }
             }
