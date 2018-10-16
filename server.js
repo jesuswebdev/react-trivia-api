@@ -3,6 +3,9 @@
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 
 const Hapi = require('hapi');
+const Inert = require('inert');
+const Vision = require('vision');
+const HapiSwagger = require('hapi-swagger');
 const configureMongoose = require('./config/mongoose');
 
 const server = Hapi.server({
@@ -19,6 +22,22 @@ const init = async () => {
     configureMongoose();
 
     await server.register(require('./web/auth/auth'));
+
+    if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'production') {
+        await server.register([
+            Inert,
+            Vision,
+            {
+                plugin: HapiSwagger,
+                
+                    info: {
+                        title: 'React Trivia API Documentation',
+                        version: 1
+                    }
+                
+            }
+        ])
+    }
 
     await server.register([
         {

@@ -93,6 +93,7 @@ module.exports = {
             path: '/{id}',
             handler: User.remove,
             options: {
+                tags: ['api'],
                 auth: {
                     access: {
                         scope: ['delete:users/id']

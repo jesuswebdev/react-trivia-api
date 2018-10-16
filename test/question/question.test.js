@@ -14,7 +14,6 @@ experiment('Question Route Test: ', () => {
     let mockQuestion = null;
 
     before(async () => {
-        
     
         mockQuestion = {
             title: '¿Cuando comenzó la Primera Guerra Mundial?',
