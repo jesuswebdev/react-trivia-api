@@ -32,7 +32,6 @@ experiment('Profile Route Test: ', () => {
                 },
                 payload: {
                     title: 'Test title',
-                    type: 'Test type',
                     permissions: {
                         create: [{ description: 'test description', value: 'create:test', active: true }],
                         read: [{ description: 'test description', value: 'read:test', active: true }],
@@ -51,18 +50,6 @@ experiment('Profile Route Test: ', () => {
 
         test('fails when the title is too short', async () => {
             options.payload.title = 'asd';
-            const {result} = await server.inject(options);
-            expect(result.statusCode).to.be.equal(400);
-        })
-        
-        test('fails when there is no type', async () => {
-            options.payload.type = '';
-            const {result} = await server.inject(options);
-            expect(result.statusCode).to.be.equal(400);
-        })
-
-        test('fails when the type is too short', async () => {
-            options.payload.type = 'asd';
             const {result} = await server.inject(options);
             expect(result.statusCode).to.be.equal(400);
         })
@@ -121,12 +108,6 @@ experiment('Profile Route Test: ', () => {
             expect(statusCode).to.be.equal(400);
         })
 
-        test('fails when a query is present', async () => {
-            options.url += '?test=test';
-            const {result} = await server.inject(options);
-            expect(result.statusCode).to.be.equal(400);
-        })
-
         test('fails when there is a duplicate title in the database', async () => {
             await Profile({
                 title: 'Test title',
@@ -139,37 +120,22 @@ experiment('Profile Route Test: ', () => {
             expect(statusCode).to.be.equal(409);
         })
 
-        test('fails when there is a duplicate type in the database', async () => {
-            await Profile({
-                title: 'Test title',
-                type: 'Test type',
-                permissions: {
-                    create: [{description: 'test description', value: 'create:test', active: false}]
-                }
-            }).save();
-            const {result} = await server.inject(options);
-            expect(result.statusCode).to.be.equal(409);
-        })
-
-        test('success when create:profile permission is set', async () => {
+        test('success when the user has create:profile permission', async () => {
             const {statusCode} = await server.inject(options);
             expect(statusCode).to.be.equal(201);
         })
 
-        test('fails when write:profile permission is not present', async () => {
+        test('fails when the user has no authorization', async () => {
             options.credentials.scope = [];
             const {statusCode} = await server.inject(options);
             expect(statusCode).to.be.equal(403);
         })
 
-        test('returns a profile object when successful', async () => {
+        test('returns the profile id when successful', async () => {
             const {statusCode, result} = await server.inject(options);
             expect(statusCode).to.be.equal(201);
-            expect(result).to.be.an.object();
-            expect(result.title).to.be.a.string();
-            expect(result.type).to.be.a.string();
-            expect(result.permissions).to.be.an.object();
-            expect(result._id).to.be.an.object();
+            expect(result.profile).to.be.a.string();
+            expect(result.profile.length).to.be.equal(24);
         })
     })
     
@@ -195,7 +161,7 @@ experiment('Profile Route Test: ', () => {
             expect(result.profile_count).to.be.a.number();
         })
 
-        test('fails when read:profile permission is not present', async () => {
+        test('fails when the user has no authorization', async () => {
             options.credentials = { scope: [] }
             const {statusCode} = await server.inject(options);
             expect(statusCode).to.be.equal(403);
@@ -276,12 +242,6 @@ experiment('Profile Route Test: ', () => {
 
         })
 
-        test('fails when the url has a query', async () => {
-            options.url += '?query=query';
-            const {statusCode} = await server.inject(options);
-            expect(statusCode).to.be.equal(400);
-        })
-
         test('returns a profile object', async () => {
             const {statusCode, result} = await server.inject(options);
             expect(statusCode).to.be.equal(200);
@@ -331,7 +291,6 @@ experiment('Profile Route Test: ', () => {
                 },
                 payload: {
                     title: 'Testerino',
-                    type: 'testerino',
                     permissions: {
                         create: [{description: 'test2 description', value: 'create:test', active: false}],
                         read: [{description: 'test3 description', value: 'read:test', active: false}],

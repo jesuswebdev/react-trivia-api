@@ -11,9 +11,8 @@ const UserSchema = new Schema({
     password: { type: String, required: true },
     games_played: { type: Number, default: 0 },
     coins: { type: Number, default: 0 },
-    created: { type: Date, default: Date.now() },
     account_type: { type: mongoose.Schema.ObjectId, ref: 'Profile', required: true }
-})
+}, { timestamps: true });
 
 UserSchema.pre('save', async function() {
     try {

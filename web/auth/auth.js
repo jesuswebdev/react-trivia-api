@@ -22,6 +22,9 @@ module.exports = {
                     if (!auth) {
                         return Boom.unauthorized('No tienes autorización', ['Bearer']);
                     }
+                    if (!/^Bearer /.test(token)) {
+                        return Boom.badRequest('Token no válido');
+                    }
 
                     try {
                         token = auth.slice(7);
@@ -47,7 +50,7 @@ module.exports = {
                         }
 
                         credentials = {
-                            ...payload,
+                            id: payload.id,
                             scope: payload.permissions
                         };
                     }

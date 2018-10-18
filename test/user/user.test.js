@@ -487,7 +487,7 @@ experiment('User Route Test: ', () => {
             expect(result.name).to.exist().and.to.be.a.string();
             expect(result.email).to.exist().and.to.be.a.string();
             expect(result.games_played).to.exist().and.to.be.a.number();
-            expect(result.created).to.exist().and.to.be.a.date();
+            expect(result.createdAt).to.exist().and.to.be.a.date();
             expect(result.coins).to.exist().and.to.be.a.number();
             expect(result.account_type).to.exist().and.to.be.an.object();
         })

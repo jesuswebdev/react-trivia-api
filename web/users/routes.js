@@ -79,9 +79,8 @@ module.exports = {
                     payload: Joi.object({
                         name: Joi.string().min(6).trim(),
                         email: Joi.string().email().trim(),
-                        password: Joi.string().min(6).trim(),
                         account_type: Joi.string().alphanum().trim().length(24)
-                    }).or(['name', 'email', 'password', 'account_type']),
+                    }).or(['name', 'email', 'account_type']),
                     query: false
                 }
             }
@@ -93,7 +92,6 @@ module.exports = {
             path: '/{id}',
             handler: User.remove,
             options: {
-                tags: ['api'],
                 auth: {
                     access: {
                         scope: ['delete:users/id']

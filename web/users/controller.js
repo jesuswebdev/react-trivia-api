@@ -26,16 +26,14 @@ exports.create = async (req, h) => {
 
 exports.find = async (req, h) => {
     let foundUser = null;
-    let userCount = 0;
-
     try {
         foundUser = await User.find({}, { password: false });
-        userCount = await User.countDocuments();
-    } catch (err) {
+    }
+    catch (err) {
         return Boom.internal();
     }
-
-    return { users: foundUser, user_count: userCount }
+    
+    return { users: foundUser, user_count: foundUser.length }
 };
 
 exports.findById = async (req, h) => {
@@ -47,7 +45,7 @@ exports.findById = async (req, h) => {
     }
 
     try {
-        foundUser = await User.findById(req.params.id, { password: false }).populate('account_type',);
+        foundUser = await User.findById(req.params.id, { password: false }).populate('account_type');
         if (!foundUser) {
             return Boom.notFound('El usuario no existe');
         }
@@ -68,7 +66,7 @@ exports.update = async (req, h) => {
     try {
         if (req.payload.email) {
             const { _id } = await User.findOne({ email: req.payload.email });
-            if (_id !== req.params.id) {
+            if (_id.toString() !== req.params.id) {
                 return Boom.conflict();
             }
         }
@@ -128,16 +126,19 @@ exports.login = async (req, h) => {
         ...permissions.delete
     ].map(p => p.value);
 
+    const tokenUser = {
+        id: foundUser._id,
+        permissions
+    }
+
+    let token = await Iron.seal(tokenUser, iron.password, Iron.defaults);
+
     foundUser = {
         id: foundUser._id,
         name: foundUser.name,
         email: foundUser.email,
-        role,
-        permissions
+        role
     }
-
-    let token = await Iron.seal(foundUser, iron.password, Iron.defaults);
-    foundUser.permissions = undefined;
 
     return {user: foundUser, token}
 }
@@ -150,12 +151,12 @@ exports.adminLogin = async (req, h) => {
         if (!foundUser) {
             return Boom.badData('Combinacion de email/contraseña incorrectos');
         }
+        if (foundUser.account_type.type !== 'admin') {
+            return Boom.notFound('El usuario no existe');
+        }
         let same = await foundUser.validatePassword(req.payload.password, foundUser.password);
         if (!same) {
             return Boom.badData('Combinacion de email/contraseña incorrectos');
-        }
-        if (foundUser.account_type.type !== 'admin') {
-            return Boom.notFound('El usuario no existe');
         }
     } catch (err) {
         return Boom.internal();
@@ -170,16 +171,19 @@ exports.adminLogin = async (req, h) => {
         ...permissions.delete
     ].map(p => p.value);
 
+    const tokenUser = {
+        id: foundUser._id,
+        permissions
+    }
+
+    let token = await Iron.seal(tokenUser, iron.password, Iron.defaults);
+
     foundUser = {
         id: foundUser._id,
         name: foundUser.name,
         email: foundUser.email,
-        role,
-        permissions
+        role
     }
-
-    let token = await Iron.seal(foundUser, iron.password, Iron.defaults);
-    foundUser.permissions = undefined;
 
     return {user: foundUser, token}
 }

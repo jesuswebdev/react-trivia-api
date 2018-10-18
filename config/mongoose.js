@@ -14,4 +14,5 @@ module.exports = () => {
     require('../web/users/model');
     require('../web/category/model');
     require('../web/questions/model');
+    require('../web/games/model');
 }

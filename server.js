@@ -7,6 +7,7 @@ const Inert = require('inert');
 const Vision = require('vision');
 const HapiSwagger = require('hapi-swagger');
 const configureMongoose = require('./config/mongoose');
+const pkg = require('./package.json');
 
 const server = Hapi.server({
     port: process.env.PORT || 3000,
@@ -29,12 +30,10 @@ const init = async () => {
             Vision,
             {
                 plugin: HapiSwagger,
-                
-                    info: {
-                        title: 'React Trivia API Documentation',
-                        version: 1
-                    }
-                
+                info: {
+                    title: 'React Trivia API Documentation',
+                    version: pkg.version
+                }
             }
         ])
     }

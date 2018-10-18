@@ -4,8 +4,9 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const OptionSubSchema = new Schema({
-    text: { type: String, required: true },
-    correctAnswer: { type: Boolean, required: true }
+    text: { type: String },
+    correct_answer: { type: Boolean, required: true },
+    option_id: { type: Number }
 }, { _id: false, id: false })
 
 const QuestionSchema = new Schema({
@@ -14,11 +15,11 @@ const QuestionSchema = new Schema({
     category: { type: mongoose.Schema.ObjectId, ref: 'Category', required: true },
     difficulty: { type: String, enum: ['easy', 'medium', 'hard'], required: true },
     tags: { type: [String], default: [] },
-    answered: { type: Boolean, default: false },
-    selectedCorrectAnswer: { type: Boolean, default: false },
-    didYouKnow: { type: String, default: '' },
+    did_you_know: { type: String, default: '' },
     approved: { type: Boolean, default: true },
-    link: { type: String, default: '' }
+    link: { type: String, default: '' },
+    times_answered: { type: Number, default: 0 },
+    times_answered_correctly: { type: Number, default: 0 }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Question', QuestionSchema);

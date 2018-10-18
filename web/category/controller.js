@@ -21,16 +21,14 @@ exports.create = async (req, h) => {
 
 exports.find = async (req, h) => {
     let foundCategories = null;
-    let categoriesCount = 0;
 
     try {
-        foundCategories = await Category.find();
-        categoriesCount = await Category.countDocuments();
+        foundCategories = await Category.find({});
     } catch (err) {
         return Boom.internal();
     }
 
-    return { categories: foundCategories, categories_count: categoriesCount };
+    return { categories: foundCategories, categories_count: foundCategories.length };
 };
 
 exports.findById = async (req, h) => {
@@ -52,7 +50,7 @@ exports.update = async (req, h) => {
     let updatedCategory = null;
 
     try {
-        updatedCategory = await Category.findByIdAndUpdate(req.params.id, req.payload, { new:true });
+        updatedCategory = await Category.findByIdAndUpdate(req.params.id, { $set: { ...req.payload } }, { new:true });
         if (!updatedCategory) {
             return Boom.notFound();
         }
@@ -77,3 +75,15 @@ exports.remove = async (req, h) => {
 
     return h.response();
 };
+
+exports.incrementQuestionCount = async (categoryId) => {
+    try {
+        await Category.findByIdAndUpdate(categoryId, { $inc: { question_count: 1 } });
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+exports.decrementQuestionCount = async (categoryId) => {
+    await Category.findByIdAndUpdate(categoryId, { $inc: { question_count: -1 } });
+}

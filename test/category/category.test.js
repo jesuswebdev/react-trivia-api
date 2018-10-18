@@ -69,7 +69,7 @@ experiment('Category Route Test: ', () => {
             expect(result.title).to.be.a.string();
             expect(result._id).to.be.an.object();
             expect(result.question_count).to.be.a.number();
-            expect(result.created).to.be.a.date();
+            expect(result.createdAt).to.be.a.date();
         })
     });
 
@@ -107,7 +107,7 @@ experiment('Category Route Test: ', () => {
             result.categories.map(c => {
                 expect(c.title).to.exist().and.to.be.a.string();
                 expect(c.question_count).to.exist().and.to.be.a.number();
-                expect(c.created).to.exist().and.to.be.a.date();
+                expect(c.createdAt).to.exist().and.to.be.a.date();
                 expect(c._id).to.exist().and.to.be.an.object();
             })
         })
@@ -156,7 +156,7 @@ experiment('Category Route Test: ', () => {
             expect(statusCode).to.equal(200);
             expect(result.title).to.exist().and.to.be.a.string();
             expect(result.question_count).to.exist().and.to.be.a.number();
-            expect(result.created).to.exist().and.to.be.a.date();
+            expect(result.createdAt).to.exist().and.to.be.a.date();
             expect(result._id).to.exist().and.to.be.an.object();
         })
 
@@ -204,7 +204,7 @@ experiment('Category Route Test: ', () => {
             expect(result.title).to.be.a.string().and.to.be.equal(options.payload.title);
             expect(result._id).to.be.an.object();
             expect(result.question_count).to.be.a.number();
-            expect(result.created).to.be.a.date();
+            expect(result.createdAt).to.be.a.date();
         })
     });
 

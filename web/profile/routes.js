@@ -19,7 +19,6 @@ module.exports = {
                 validate: {
                     payload: Joi.object({
                         title: Joi.string().min(4).trim().required(),
-                        type: Joi.string().min(4).trim().required(),
                         permissions: Joi.object({
                             create: Joi.array().min(1).items(
                                 Joi.object({
@@ -109,7 +108,6 @@ module.exports = {
                 validate: {
                     payload: Joi.object({
                         title: Joi.string().trim().min(4),
-                        type: Joi.string().trim().min(4),
                         permissions: Joi.object({
                             create: Joi.array().min(1).items(
                                 Joi.object({

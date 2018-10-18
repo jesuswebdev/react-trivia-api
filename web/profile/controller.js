@@ -10,34 +10,28 @@ exports.create = async (req, h) => {
         let foundProfile = await Profile.findOne({title: req.payload.title});
         if (foundProfile) {
             return Boom.conflict('Ya existe un perfil con ese nombre')
-        }
+        }      
 
-        foundProfile = await Profile.findOne({type: req.payload.type});
-        if (foundProfile) {
-            return Boom.conflict('Ya existe un perfil con ese tipo')
-        }
-        
-        createdProfile = new Profile(req.payload);
-        createdProfile = await createdProfile.save();
+        createdProfile = await Profile({
+            ...req.payload,
+            type: req.payload.title.replace(/ /g, '-').toLocaleLowerCase()
+        }).save();
     } catch (err) {
         return Boom.internal();
     }
-
-    return h.response(createdProfile).code(201);
+    return h.response({ profile: createdProfile._id.toString() }).code(201);
 };
 
 exports.find = async (req, h) => {
     let foundProfiles = null;
-    let profileCount = 0;
 
     try {
         foundProfiles = await Profile.find({});
-        profileCount = await Profile.countDocuments({});
     } catch (err) {
         return Boom.internal();
     }
 
-    return { profiles: foundProfiles, profile_count: profileCount };
+    return { profiles: foundProfiles, profile_count: foundProfiles.length };
 };
 
 exports.findById = async (req, h) => {

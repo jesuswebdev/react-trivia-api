@@ -21,12 +21,12 @@ const PermissionsSubSchema = new Schema({
     read: { type: [PermissionSchema], default: [], validate: (value) => validatePermissions(value, 'read:') },
     update: { type: [PermissionSchema], default: [], validate: (value) => validatePermissions(value, 'update:') },
     delete: { type: [PermissionSchema], default: [], validate: (value) => validatePermissions(value, 'delete:') },
-}, { _id: false, id: false  })
+}, { _id: false, id: false })
 
 const ProfileSchema = new Schema({
     title: { type: String, required: true },
     type: { type: String, required: true },
     permissions: { type: PermissionsSubSchema, required: true}
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model('Profile', ProfileSchema);
