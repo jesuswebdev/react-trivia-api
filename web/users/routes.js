@@ -118,8 +118,7 @@ module.exports = {
                     payload: Joi.object({
                         name: Joi.string().min(6).trim().required(),
                         email: Joi.string().email().trim().required(),
-                        password: Joi.string().min(6).trim().required(),
-                        account_type: Joi.string().alphanum().trim().length(24).required()
+                        password: Joi.string().min(6).trim().required()
                     }),
                     query: false
                 }
@@ -155,19 +154,6 @@ module.exports = {
                         email: Joi.string().email().trim().required(),
                         password: Joi.string().min(6).trim().required()
                     }),
-                    query: false
-                }
-            }
-        });
-
-        server.route({
-            method: 'GET',
-            path: '/token',
-            handler: User.token,
-            options: {
-                auth: false,
-                validate: {
-                    payload: false,
                     query: false
                 }
             }

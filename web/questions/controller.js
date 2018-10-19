@@ -87,9 +87,11 @@ exports.update = async (req, h) => {
         }
     }
 
-    let category = await Category.findById(req.payload.category);
-    if (!category) {
-        return Boom.badRequest('La categoria especificada no existe');
+    if (req.payload.category) {
+        let category = await Category.findById(req.payload.category);
+        if (!category) {
+            return Boom.badRequest('La categoria especificada no existe');
+        }
     }
 
     try {

@@ -18,11 +18,11 @@ module.exports = {
                     let token = null;
                     let payload = null;
                     let auth = req.raw.req.headers.authorization || null;
-                
+
                     if (!auth) {
                         return Boom.unauthorized('No tienes autorización', ['Bearer']);
                     }
-                    if (!/^Bearer /.test(token)) {
+                    if (!/^Bearer /.test(auth)) {
                         return Boom.badRequest('Token no válido');
                     }
 
@@ -43,15 +43,21 @@ module.exports = {
                     let credentials = null;
                     
                     try {
-                        let foundUser = await User.findById(payload.id);
+                        let foundUser = await User.findById(payload.id).populate('account_type', 'permissions type');
 
                         if (!foundUser) {
                             return Boom.unauthorized('Error de autenticación. El usuario no existe');
                         }
-
+                        const permissions = foundUser.account_type.permissions;
                         credentials = {
                             id: payload.id,
-                            scope: payload.permissions
+                            role: foundUser.account_type.type,
+                            scope: [
+                                ...permissions.create,
+                                ...permissions.read,
+                                ...permissions.update,
+                                ...permissions.delete
+                            ]
                         };
                     }
                     catch (error) {

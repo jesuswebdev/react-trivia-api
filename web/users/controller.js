@@ -4,7 +4,7 @@ const Boom = require('boom');
 const Iron = require('iron');
 const User = require('./model');
 const Profile = require('mongoose').model('Profile');
-const {iron} = require('../../config/config');
+const {iron, db} = require('../../config/config');
 
 exports.create = async (req, h) => {
 
@@ -40,12 +40,12 @@ exports.findById = async (req, h) => {
 
     let foundUser = null;
     
-    if (req.auth.credentials.role !== 'admin' && req.auth.credentials.id !== req.params.id) {
+    if (req.auth.credentials.role !== 'administrador' && req.auth.credentials.id !== req.params.id) {
         return Boom.forbidden();
     }
 
     try {
-        foundUser = await User.findById(req.params.id, { password: false }).populate('account_type');
+        foundUser = await User.findById(req.params.id, { password: false }).populate('account_type', 'title');
         if (!foundUser) {
             return Boom.notFound('El usuario no existe');
         }
@@ -59,7 +59,7 @@ exports.findById = async (req, h) => {
 exports.update = async (req, h) => {
     let updatedUser = null;
 
-    if (req.auth.credentials.id !== req.params.id && req.auth.credentials.role !== 'admin') {
+    if (req.auth.credentials.id !== req.params.id && req.auth.credentials.role !== 'administrador') {
         return Boom.forbidden();
     }
     
@@ -117,18 +117,11 @@ exports.login = async (req, h) => {
         return Boom.internal();
     }
 
-    let { _doc: { account_type: { permissions, type: role } } } = foundUser;
-
-    permissions = [
-        ...permissions.create,
-        ...permissions.read,
-        ...permissions.update,
-        ...permissions.delete
-    ].map(p => p.value);
+    console.log(foundUser.account_type.permissions);
+    let { _doc: { account_type: { type: role } } } = foundUser;
 
     const tokenUser = {
-        id: foundUser._id,
-        permissions
+        id: foundUser._id
     };
 
     let token = await Iron.seal(tokenUser, iron.password, Iron.defaults);
@@ -151,7 +144,7 @@ exports.adminLogin = async (req, h) => {
         if (!foundUser) {
             return Boom.badData('Combinacion de email/contraseña incorrectos');
         }
-        if (foundUser.account_type.type !== 'admin') {
+        if (foundUser.account_type.type !== 'administrador') {
             return Boom.notFound('El usuario no existe');
         }
         let same = await foundUser.validatePassword(req.payload.password, foundUser.password);
@@ -162,18 +155,10 @@ exports.adminLogin = async (req, h) => {
         return Boom.internal();
     }
 
-    let { _doc: { account_type: { permissions, type: role } } } = foundUser;
-
-    permissions = [
-        ...permissions.create,
-        ...permissions.read,
-        ...permissions.update,
-        ...permissions.delete
-    ].map(p => p.value);
+    let { _doc: { account_type: { type: role } } } = foundUser;
 
     const tokenUser = {
-        id: foundUser._id,
-        permissions
+        id: foundUser._id
     };
 
     let token = await Iron.seal(tokenUser, iron.password, Iron.defaults);
@@ -197,24 +182,13 @@ exports.register = async (req, h) => {
     let createdUser = null;
 
     try {
-        createdUser = await User(req.payload).save();
+        createdUser = await User({
+            ...req.payload,
+            account_type: db.userId
+        }).save();
     } catch (err) {
         return Boom.internal();
     }
 
-    return h.response(createdUser).code(201);
-};
-
-exports.token = async (req, h) => {
-    let guest = {
-        name: 'guest',
-        account_type: {
-            type: 'guest'
-        },
-        scope: []
-    };
-
-    let token = await Iron.seal(guest, iron.password, Iron.defaults);
-    
-    return token;
+    return h.response({ user: createdUser._id.toString()}).code(201);
 };
