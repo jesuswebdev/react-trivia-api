@@ -13,4 +13,4 @@ exports.randomizeArray = (arr, finalLength) => {
         }
     }
     return [...Array(finalLength)].map((_, i) => arr[ramdomized[i]]);
-}
+};

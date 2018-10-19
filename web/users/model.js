@@ -16,11 +16,11 @@ const UserSchema = new Schema({
 
 UserSchema.pre('save', async function() {
     try {
-        this.password = await bcrypt.hash(this.password, saltRounds)
+        this.password = await bcrypt.hash(this.password, saltRounds);
     } catch (err) {
         return err;
-    }
-})
+    };
+});
 
 UserSchema.methods.validatePassword = async (password, userPassword) => {
     if (userPassword !== undefined) {
@@ -31,6 +31,6 @@ UserSchema.methods.validatePassword = async (password, userPassword) => {
         }
     }
     return false;
-}
+};
 
 module.exports = mongoose.model('User', UserSchema);

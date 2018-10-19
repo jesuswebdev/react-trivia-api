@@ -199,6 +199,7 @@ module.exports = {
             }
         });
 
+        //  GET /newgame/{difficulty}
         server.route({
             method: 'GET',
             path: '/newgame/{difficulty}',

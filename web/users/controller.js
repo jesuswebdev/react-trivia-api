@@ -33,7 +33,7 @@ exports.find = async (req, h) => {
         return Boom.internal();
     }
     
-    return { users: foundUser, user_count: foundUser.length }
+    return { users: foundUser, user_count: foundUser.length };
 };
 
 exports.findById = async (req, h) => {
@@ -54,7 +54,7 @@ exports.findById = async (req, h) => {
     }
 
     return foundUser;
-}
+};
 
 exports.update = async (req, h) => {
     let updatedUser = null;
@@ -86,7 +86,7 @@ exports.remove = async (req, h) => {
     let deletedUser = null;
 
     if (req.params.id === req.auth.credentials.id) {
-        return Boom.badData()
+        return Boom.badData();
     }
 
     try {
@@ -129,7 +129,7 @@ exports.login = async (req, h) => {
     const tokenUser = {
         id: foundUser._id,
         permissions
-    }
+    };
 
     let token = await Iron.seal(tokenUser, iron.password, Iron.defaults);
 
@@ -138,10 +138,10 @@ exports.login = async (req, h) => {
         name: foundUser.name,
         email: foundUser.email,
         role
-    }
+    };
 
-    return {user: foundUser, token}
-}
+    return {user: foundUser, token};
+};
 
 exports.adminLogin = async (req, h) => {
     let foundUser = null;
@@ -174,7 +174,7 @@ exports.adminLogin = async (req, h) => {
     const tokenUser = {
         id: foundUser._id,
         permissions
-    }
+    };
 
     let token = await Iron.seal(tokenUser, iron.password, Iron.defaults);
 
@@ -183,10 +183,10 @@ exports.adminLogin = async (req, h) => {
         name: foundUser.name,
         email: foundUser.email,
         role
-    }
+    };
 
-    return {user: foundUser, token}
-}
+    return {user: foundUser, token};
+};
 
 exports.register = async (req, h) => {
     let foundUser = await User.findOne({email: req.payload.email});
@@ -203,7 +203,7 @@ exports.register = async (req, h) => {
     }
 
     return h.response(createdUser).code(201);
-}
+};
 
 exports.token = async (req, h) => {
     let guest = {
@@ -212,9 +212,9 @@ exports.token = async (req, h) => {
             type: 'guest'
         },
         scope: []
-    }
+    };
 
     let token = await Iron.seal(guest, iron.password, Iron.defaults);
     
     return token;
-}
+};

@@ -9,7 +9,7 @@ exports.create = async (req, h) => {
     try {
         let foundProfile = await Profile.findOne({title: req.payload.title});
         if (foundProfile) {
-            return Boom.conflict('Ya existe un perfil con ese nombre')
+            return Boom.conflict('Ya existe un perfil con ese nombre');
         }      
 
         createdProfile = await Profile({
@@ -41,14 +41,14 @@ exports.findById = async (req, h) => {
     try {
         foundProfile = await Profile.findById(req.params.id);
         if (!foundProfile) {
-            return Boom.notFound('Recurso no encontrado')
+            return Boom.notFound('Recurso no encontrado');
         }
     } catch (err) {
         return Boom.internal();
     }
 
     return foundProfile;
-}
+};
 
 exports.update = async (req, h) => {
 

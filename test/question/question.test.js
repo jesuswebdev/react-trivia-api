@@ -721,8 +721,8 @@ experiment('Question Route Test: ', () => {
             expect(result).to.be.an.object();
             expect(result.suggestions).to.be.an.array();
             result.suggestions.map(s => {
-                expect(s.approved).to.be.false()
-            })
+                expect(s.approved).to.be.false();
+            });
         });
 
         test('returns the suggestions count', async () => {

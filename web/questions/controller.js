@@ -1,7 +1,7 @@
 'use strict';
 
 const Boom = require('boom');
-const iron = require('iron');
+const Iron = require('iron');
 const Category = require('mongoose').model('Category');
 const Question = require('mongoose').model('Question');
 const Game = require('mongoose').model('Game');
@@ -205,7 +205,7 @@ exports.newgame = async (req, h) => {
 
     foundQuestions = randomizeArray(foundQuestions, question_count);
 
-    let questionIdArray = foundQuestions.map(q => { return { id: q._id.toString() }});
+    let questionIdArray = foundQuestions.map(q => { return { question: q._id.toString() };});
 
     let newgame;
 
@@ -215,7 +215,7 @@ exports.newgame = async (req, h) => {
             user: req.auth.credentials.id,
             difficulty,
             total_questions: question_count,
-            state: 'STARTED'
+            state: 'started'
         }).save();
     } catch (error) {
         return Boom.internal();
@@ -228,7 +228,7 @@ exports.newgame = async (req, h) => {
     let token;
 
     try {
-        token = await iron.seal(sealObject, IronPassword, iron.defaults);
+        token = await Iron.seal(sealObject, IronPassword, Iron.defaults);
     } catch (error) {
         return Boom.internal();
     }
@@ -242,9 +242,9 @@ exports.incrementQuestionAnswered = async (questionId, selectedOption) => {
     let correct = options.find(option => option.option_id === selectedOption).correct_answer;
 
     if (correct) {
-        return Question.findByIdAndUpdate(questionId, { $inc: { times_answered: 1, times_answered_correctly: 1 } });
+        await Question.findByIdAndUpdate(questionId, { $inc: { times_answered: 1, times_answered_correctly: 1 } });
     }
     else {
-        return Question.findByIdAndUpdate(questionId, { $inc: { times_answered: 1 } });
+        await Question.findByIdAndUpdate(questionId, { $inc: { times_answered: 1 } });
     }
 };

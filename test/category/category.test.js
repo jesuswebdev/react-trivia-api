@@ -3,7 +3,7 @@
 process.env.NODE_ENV = 'test';
 process.env.PORT = 4000;
 
-const { test, experiment, before, beforeEach, after } = exports.lab = require('lab').script()
+const { test, experiment, before, beforeEach, after } = exports.lab = require('lab').script();
 const { expect } = require('code');
 const server = require('../../server');
 const Category = require('mongoose').model('Category');
@@ -13,7 +13,7 @@ experiment('Category Route Test: ', () => {
 
     beforeEach(async () => {
         options = null;
-    })
+    });
 
     experiment('POST /category', () => {
 
@@ -29,39 +29,39 @@ experiment('Category Route Test: ', () => {
                 payload: {
                     title: 'Economia'
                 }
-            }
-        })
+            };
+        });
 
         test('allow the admin to create a category', async () => {
             const {statusCode} = await server.inject(options);
             expect(statusCode).to.equal(201);
-        })
+        });
 
         test('returns error 403 when the user is not authorized', async () => {
             options.credentials.scope = [];
             const {statusCode} = await server.inject(options);
             expect(statusCode).to.equal(403);
-        })
+        });
 
         test('returns error when the title is too short', async () => {
             options.payload.title = 'asd';
             const {statusCode} = await server.inject(options);
             expect(statusCode).to.equal(400);
-        })
+        });
 
         test('returns error when there is no title', async () => {
             options.payload = {};
             const {statusCode} = await server.inject(options);
             expect(statusCode).to.equal(400);
-        })
+        });
 
         test('returns error 409 when there is a duplicate category in DB', async () => {
             await Category({
                 title: 'Economia'
-            }).save()
+            }).save();
             const {statusCode} = await server.inject(options);
             expect(statusCode).to.equal(409);
-        })
+        });
 
         test('returns the created category', async () => {
             const {statusCode, result} = await server.inject(options);
@@ -70,7 +70,7 @@ experiment('Category Route Test: ', () => {
             expect(result._id).to.be.an.object();
             expect(result.question_count).to.be.a.number();
             expect(result.createdAt).to.be.a.date();
-        })
+        });
     });
 
     experiment('GET /category', () => {
@@ -84,19 +84,19 @@ experiment('Category Route Test: ', () => {
                 credentials: {
                     scope: ['read:category']
                 }
-            }
-        })
+            };
+        });
 
         test('success when authorized', async () => {
             const {statusCode} = await server.inject(options);
             expect(statusCode).to.equal(200);
-        })
+        });
 
         test('returns error 403 when not authorized', async () => {
             options.credentials = {};
             const {statusCode} = await server.inject(options);
             expect(statusCode).to.equal(403);
-        })
+        });
 
         test('returns an array of categories', async () => {
             const {statusCode, result} = await server.inject(options);
@@ -109,14 +109,14 @@ experiment('Category Route Test: ', () => {
                 expect(c.question_count).to.exist().and.to.be.a.number();
                 expect(c.createdAt).to.exist().and.to.be.a.date();
                 expect(c._id).to.exist().and.to.be.an.object();
-            })
-        })
+            });
+        });
 
         test('returns the number of categories found', async () => {
             const {statusCode, result: { categories_count }} = await server.inject(options);
             expect(statusCode).to.equal(200);
-            expect(categories_count).to.exist().and.to.be.a.number()
-        })
+            expect(categories_count).to.exist().and.to.be.a.number();
+        });
     });
 
     experiment('GET /category/{id}', () => {
@@ -131,25 +131,25 @@ experiment('Category Route Test: ', () => {
                 credentials: {
                     scope: ['read:category/id']
                 }
-            }
-        })
+            };
+        });
 
         test('success when authorized', async () => {
             const {statusCode} = await server.inject(options);
             expect(statusCode).to.equal(200);
-        })
+        });
 
         test('returns error 403 when not authorized', async () => {
             options.credentials = {};
             const {statusCode} = await server.inject(options);
             expect(statusCode).to.equal(403);
-        })
+        });
 
         test('returns error 404 when category not found', async () => {
             await Category.deleteOne({ _id : catId });
             const {statusCode} = await server.inject(options);
             expect(statusCode).to.equal(404);
-        })
+        });
 
         test('returns a category object', async () => {
             const {statusCode, result} = await server.inject(options);
@@ -158,7 +158,7 @@ experiment('Category Route Test: ', () => {
             expect(result.question_count).to.exist().and.to.be.a.number();
             expect(result.createdAt).to.exist().and.to.be.a.date();
             expect(result._id).to.exist().and.to.be.an.object();
-        })
+        });
 
     });
 
@@ -178,25 +178,25 @@ experiment('Category Route Test: ', () => {
                 payload: {
                     title: 'Books'
                 }
-            }
-        })
+            };
+        });
 
         test('updates category when authorized', async () => {
             const {statusCode} = await server.inject(options);
             expect(statusCode).to.equal(200);
-        })
+        });
 
         test('returns error 403 when not authorized', async () => {
             options.credentials = {};
             const {statusCode} = await server.inject(options);
             expect(statusCode).to.equal(403);
-        })
+        });
 
         test('returns error 404 when the category was not found', async () => {
             await Category.deleteOne({ _id: catId });
             const {statusCode} = await server.inject(options);
             expect(statusCode).to.equal(404);
-        })
+        });
 
         test('returns the updated category', async () => {
             const {statusCode, result} = await server.inject(options);
@@ -205,7 +205,7 @@ experiment('Category Route Test: ', () => {
             expect(result._id).to.be.an.object();
             expect(result.question_count).to.be.a.number();
             expect(result.createdAt).to.be.a.date();
-        })
+        });
     });
 
     experiment('DELETE /category/{id}', () => {
@@ -221,25 +221,25 @@ experiment('Category Route Test: ', () => {
                 credentials: {
                     scope: ['delete:category/id']
                 }
-            }
-        })
+            };
+        });
 
         test('deletes category when authorized', async () => {
             const {statusCode} = await server.inject(options);
             expect(statusCode).to.equal(204);
-        })
+        });
 
         test('returns error 403 when not authorized', async () => {
             options.credentials = {};
             const {statusCode} = await server.inject(options);
             expect(statusCode).to.equal(403);
-        })
+        });
 
         test('returns error 404 when the category was not found', async () => {
             await Category.deleteOne({ _id: catId });
             const {statusCode} = await server.inject(options);
             expect(statusCode).to.equal(404);
-        })
+        });
     });
 
 });

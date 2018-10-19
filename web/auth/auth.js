@@ -67,4 +67,4 @@ module.exports = {
         await server.auth.strategy('userAuth', 'userScheme');
         await server.auth.default({ strategy: 'userAuth' });
     }
-}
+};

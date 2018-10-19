@@ -35,7 +35,7 @@ const init = async () => {
                     version: pkg.version
                 }
             }
-        ])
+        ]);
     }
 
     await server.register([
@@ -62,6 +62,12 @@ const init = async () => {
             routes: {
                 prefix: '/questions'
             }
+        },
+        {
+            plugin: require('./web/games/routes'),
+            routes: {
+                prefix: '/games'
+            }
         }
     ]);
 
@@ -72,7 +78,7 @@ const init = async () => {
 process.on('unhandledRejection', (err) => {
     console.log(err);
     process.exit(1);
-})
+});
 
 init();
 

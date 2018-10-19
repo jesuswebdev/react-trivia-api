@@ -7,7 +7,7 @@ exports.create = async (req, h) => {
     let createdCategory = null;
 
     try {
-        let duplicate = await Category.findOne({ title: { $regex: req.payload.title, $options: 'i' } })
+        let duplicate = await Category.findOne({ title: { $regex: req.payload.title, $options: 'i' } });
         if (duplicate) {
             return Boom.conflict('Ya existe una categoria con ese nombre');
         }
@@ -44,7 +44,7 @@ exports.findById = async (req, h) => {
     }
 
     return foundCategory;
-}
+};
 
 exports.update = async (req, h) => {
     let updatedCategory = null;
@@ -80,10 +80,10 @@ exports.incrementQuestionCount = async (categoryId) => {
     try {
         await Category.findByIdAndUpdate(categoryId, { $inc: { question_count: 1 } });
     } catch (error) {
-        console.log(error)
+        console.log(error);
     }
-}
+};
 
 exports.decrementQuestionCount = async (categoryId) => {
     await Category.findByIdAndUpdate(categoryId, { $inc: { question_count: -1 } });
-}
+};

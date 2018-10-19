@@ -7,7 +7,7 @@ const OptionSubSchema = new Schema({
     text: { type: String },
     correct_answer: { type: Boolean, required: true },
     option_id: { type: Number }
-}, { _id: false, id: false })
+}, { _id: false, id: false });
 
 const QuestionSchema = new Schema({
     title: { type: String, required: true },
