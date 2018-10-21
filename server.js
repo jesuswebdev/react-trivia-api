@@ -10,7 +10,7 @@ const configureMongoose = require('./config/mongoose');
 const pkg = require('./package.json');
 
 const server = Hapi.server({
-    port: process.env.PORT || 3000,
+    port: process.env.PORT || 8080,
     host: 'localhost',
     address: '0.0.0.0',
     routes: {

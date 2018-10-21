@@ -43,7 +43,7 @@ module.exports = {
                     let credentials = null;
                     
                     try {
-                        let foundUser = await User.findById(payload.id).populate('account_type', 'permissions type');
+                        let foundUser = await User.findById(payload.id).populate('account_type', 'permissions role');
 
                         if (!foundUser) {
                             return Boom.unauthorized('Error de autenticación. El usuario no existe');
@@ -51,7 +51,7 @@ module.exports = {
                         const permissions = foundUser.account_type.permissions;
                         credentials = {
                             id: payload.id,
-                            role: foundUser.account_type.type,
+                            role: foundUser.account_type.role,
                             scope: [
                                 ...permissions.create,
                                 ...permissions.read,

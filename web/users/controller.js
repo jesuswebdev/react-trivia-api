@@ -117,8 +117,7 @@ exports.login = async (req, h) => {
         return Boom.internal();
     }
 
-    console.log(foundUser.account_type.permissions);
-    let { _doc: { account_type: { type: role } } } = foundUser;
+    let { _doc: { account_type: { role } } } = foundUser;
 
     const tokenUser = {
         id: foundUser._id
@@ -144,7 +143,7 @@ exports.adminLogin = async (req, h) => {
         if (!foundUser) {
             return Boom.badData('Combinacion de email/contraseña incorrectos');
         }
-        if (foundUser.account_type.type !== 'administrador') {
+        if (foundUser.account_type.role !== 'administrador') {
             return Boom.notFound('El usuario no existe');
         }
         let same = await foundUser.validatePassword(req.payload.password, foundUser.password);
@@ -155,7 +154,7 @@ exports.adminLogin = async (req, h) => {
         return Boom.internal();
     }
 
-    let { _doc: { account_type: { type: role } } } = foundUser;
+    let { _doc: { account_type: { role } } } = foundUser;
 
     const tokenUser = {
         id: foundUser._id

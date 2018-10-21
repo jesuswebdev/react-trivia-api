@@ -27,15 +27,13 @@ module.exports = {
                         ).required(),
                         category: Joi.string().alphanum().trim().length(24).required(),
                         difficulty: Joi.string().only(['easy', 'medium', 'hard']).required(),
-                        tags: Joi.array().min(1).items(
+                        tags: Joi.array().items(
                             Joi.string().min(4).strict()
-                        ).required(),
+                        ),
                         did_you_know: Joi.string().min(8).optional(),
                         link: Joi.string().regex(/^http/).min(10).optional()
                     }).options({ stripUnknown: true }),
-                    query: {
-                        suggestion: Joi.boolean().optional()
-                    }
+                    query: false
                 }
             }
         });

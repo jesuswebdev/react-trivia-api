@@ -14,7 +14,7 @@ exports.create = async (req, h) => {
 
         createdProfile = await Profile({
             ...req.payload,
-            type: req.payload.title.replace(/ /g, '-').toLocaleLowerCase()
+            role: req.payload.title.replace(/ /g, '-').toLocaleLowerCase()
         }).save();
     } catch (err) {
         return Boom.internal();

@@ -146,7 +146,7 @@ exports.createSuggestion = async (req, h) => {
     });
 
     try {
-        createdQuestion = await Question({ ...req.payload, approved: false }).save();
+        createdQuestion = await Question({ ...req.payload, state: 'pending' }).save();
     } catch (error) {
         return Boom.internal();
     }
@@ -160,7 +160,7 @@ exports.changeSuggestionStatus = async (req, h) => {
 
     try {
         if (req.params.status === 'approve') {
-            question = await Question.findByIdAndUpdate(req.params.id, { $set: { approved: true } });
+            question = await Question.findByIdAndUpdate(req.params.id, { $set: { state: 'approved' } });
             if (!question) {
                 return Boom.notFound('El recurso no existe');
             }
@@ -168,8 +168,11 @@ exports.changeSuggestionStatus = async (req, h) => {
             return { question: question._id.toString() };
         }
         else if (req.params.status === 'reject') {
-            question = await Question.findByIdAndRemove(req.params.id);
-            return h.response().code(204);
+            question = await Question.findByIdAndUpdate(req.params.id, { $set: { state: 'rejected' } });
+            if (!question) {
+                return Boom.notFound('El recurso no existe');
+            }
+            return { question: question._id.toString() };
         }
     } catch (error) {
         return Boom.internal();
@@ -195,7 +198,7 @@ exports.newgame = async (req, h) => {
     const question_count = req.query.question_count;
 
     try {
-        foundQuestions = await Question.find({ $and: [{ difficulty: difficulty }, { approved: true }] }, 
+        foundQuestions = await Question.find({ $and: [{ difficulty: difficulty }, { state: 'approved' }] }, 
             { title: true, options: true, difficulty: true, category: true, did_you_know: true, link: true })
             .populate('category', 'title');
         if (foundQuestions.length === 0) {

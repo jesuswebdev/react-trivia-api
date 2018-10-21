@@ -16,7 +16,7 @@ const QuestionSchema = new Schema({
     difficulty: { type: String, enum: ['easy', 'medium', 'hard'], required: true },
     tags: { type: [String], default: [] },
     did_you_know: { type: String, default: '' },
-    approved: { type: Boolean, default: true },
+    state: { type: String, default: 'approved', enum: ['approved', 'rejected', 'pending'] },
     link: { type: String, default: '' },
     times_answered: { type: Number, default: 0 },
     times_answered_correctly: { type: Number, default: 0 }

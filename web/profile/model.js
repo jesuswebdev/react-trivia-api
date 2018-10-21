@@ -19,8 +19,8 @@ const PermissionsSubSchema = new Schema({
 
 const ProfileSchema = new Schema({
     title: { type: String, required: true },
-    type: { type: String, required: true },
-    permissions: { type: PermissionsSubSchema, required: true}
+    role: { type: String, required: true },
+    permissions: { type: PermissionsSubSchema }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Profile', ProfileSchema);
