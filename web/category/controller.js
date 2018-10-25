@@ -2,6 +2,7 @@
 
 const Boom = require('boom');
 const Category = require('./model');
+const Question = require('../questions/model');
 
 exports.create = async (req, h) => {
     let createdCategory = null;
@@ -27,6 +28,39 @@ exports.find = async (req, h) => {
     } catch (err) {
         return Boom.internal();
     }
+
+    // let foundQuestions = await Question.find();
+
+    // let cat = {};
+
+    // foundCategories.map(c => {
+    //     cat[c._id.toString()] = {
+    //         question_count: 0,
+    //         total_easy_questions: 0,
+    //         total_medium_questions: 0,
+    //         total_hard_questions: 0
+    //     };
+    //     return c;
+    // })
+
+    // foundQuestions.map(q => {
+    //     cat[q.category].question_count += 1;
+
+    //     if (q.difficulty === 'easy') {
+    //         cat[q.category].total_easy_questions += 1;
+    //     }
+    //     if (q.difficulty === 'medium') {
+    //         cat[q.category].total_medium_questions += 1;
+    //     }
+    //     if (q.difficulty === 'hard') {
+    //         cat[q.category].total_hard_questions += 1;
+    //     }
+    // })
+    // console.log(cat);
+
+    // for (let key in cat) {
+    //     await Category.findByIdAndUpdate({_id: key}, {$set: {...cat[key]}})
+    // }
 
     return { categories: foundCategories, categories_count: foundCategories.length };
 };
@@ -76,9 +110,13 @@ exports.remove = async (req, h) => {
     return h.response();
 };
 
-exports.incrementQuestionCount = async (categoryId) => {
+exports.incrementQuestionCount = async (categoryId, difficulty) => {
+    
+    let incOptions = { question_count: 1 };
+    incOptions[`total_${difficulty}_questions`] = 1;
+
     try {
-        await Category.findByIdAndUpdate(categoryId, { $inc: { question_count: 1 } });
+        await Category.findByIdAndUpdate(categoryId, { $inc: incOptions });
     } catch (error) {
         console.log(error);
     }

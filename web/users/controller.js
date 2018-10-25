@@ -117,8 +117,6 @@ exports.login = async (req, h) => {
         return Boom.internal();
     }
 
-    let { _doc: { account_type: { role } } } = foundUser;
-
     const tokenUser = {
         id: foundUser._id
     };
@@ -128,8 +126,7 @@ exports.login = async (req, h) => {
     foundUser = {
         id: foundUser._id,
         name: foundUser.name,
-        email: foundUser.email,
-        role
+        email: foundUser.email
     };
 
     return {user: foundUser, token};
@@ -139,7 +136,7 @@ exports.adminLogin = async (req, h) => {
     let foundUser = null;
 
     try {
-        foundUser = await User.findOne({email: req.payload.email}).populate('account_type');
+        foundUser = await User.findOne({email: req.payload.email}).populate('account_type', 'role');
         if (!foundUser) {
             return Boom.badData('Combinacion de email/contraseña incorrectos');
         }
@@ -154,8 +151,6 @@ exports.adminLogin = async (req, h) => {
         return Boom.internal();
     }
 
-    let { _doc: { account_type: { role } } } = foundUser;
-
     const tokenUser = {
         id: foundUser._id
     };
@@ -166,7 +161,6 @@ exports.adminLogin = async (req, h) => {
         id: foundUser._id,
         name: foundUser.name,
         email: foundUser.email,
-        role
     };
 
     return {user: foundUser, token};

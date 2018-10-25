@@ -39,7 +39,7 @@ exports.create = async (req, h) => {
     try {
         
         createdQuestion = await Question(req.payload).save();
-        await incrementQuestionCount(req.payload.category);
+        await incrementQuestionCount(req.payload.category, req.payload.difficulty);
     } catch (error) {
         return Boom.internal();
     }

@@ -2,7 +2,7 @@
 
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcrypt-nodejs');
 const saltRounds = 12;
 
 const UserSchema = new Schema({
@@ -10,6 +10,7 @@ const UserSchema = new Schema({
     email: { type: String, required: true },
     password: { type: String, required: true },
     games_played: { type: Number, default: 0 },
+    questions_answered: { type: Number, default: 0 },
     coins: { type: Number, default: 0 },
     account_type: { type: mongoose.Schema.ObjectId, ref: 'Profile', required: true }
 }, { timestamps: true });
