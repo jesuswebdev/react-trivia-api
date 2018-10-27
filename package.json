@@ -10,7 +10,7 @@
   "author": "jesuswebdev",
   "license": "ISC",
   "dependencies": {
-    "bcrypt-nodejs": "0.0.3",
+    "bcryptjs": "^2.4.3",
     "boom": "^7.2.0",
     "hapi": "^17.6.0",
     "hapi-swagger": "^9.1.2",

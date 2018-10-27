@@ -14,7 +14,6 @@ exports.create = async (req, h) => {
     }
 
     let createdUser = null;
-
     try {
         createdUser = await User(req.payload).save();
     } catch (err) {
@@ -107,11 +106,11 @@ exports.login = async (req, h) => {
     try {
         foundUser = await User.findOne({email: req.payload.email}).populate('account_type');
         if (!foundUser) {
-            return Boom.badData('Combinacion de email/contraseña incorrectos');
+            return Boom.badData('Combinacion de correo electrónico/contraseña incorrectos');
         }
         let same = await foundUser.validatePassword(req.payload.password, foundUser.password);
         if (!same) {
-            return Boom.badData('Combinacion de email/contraseña incorrectos');
+            return Boom.badData('Combinacion de correo electrónico/contraseña incorrectos');
         }
     } catch (err) {
         return Boom.internal();
@@ -167,9 +166,10 @@ exports.adminLogin = async (req, h) => {
 };
 
 exports.register = async (req, h) => {
+
     let foundUser = await User.findOne({email: req.payload.email});
     if (foundUser) {
-        return Boom.conflict('El email ya esta en uso');
+        return Boom.conflict('El correo electrónico ya esta en uso');
     }
 
     let createdUser = null;
@@ -177,11 +177,11 @@ exports.register = async (req, h) => {
     try {
         createdUser = await User({
             ...req.payload,
-            account_type: db.userId
+            account_type: db.user_id
         }).save();
     } catch (err) {
         return Boom.internal();
     }
 
-    return h.response({ user: createdUser._id.toString()}).code(201);
+    return h.response({ user: createdUser._id.toString(), name: createdUser.name }).code(201);
 };

@@ -52,6 +52,20 @@ module.exports = {
             }
         });
 
+        //get /stats
+        server.route({
+            method: 'GET',
+            path: '/stats',
+            handler: Game.stats,
+            options: {
+                auth: false,
+                validate: {
+                    payload: false,
+                    query: false
+                }
+            }
+        });
+
         //  GET /{id}
         server.route({
             method: 'GET',
