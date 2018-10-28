@@ -177,7 +177,8 @@ exports.register = async (req, h) => {
     try {
         createdUser = await User({
             ...req.payload,
-            account_type: db.user_id
+            account_type: db.user_id,
+            ip_address: req.info.remoteAddress
         }).save();
     } catch (err) {
         return Boom.internal();

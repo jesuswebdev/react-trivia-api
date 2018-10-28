@@ -12,7 +12,8 @@ const UserSchema = new Schema({
     games_played: { type: Number, default: 0 },
     total_correct_answers: { type: Number, default: 0 },
     coins: { type: Number, default: 0 },
-    account_type: { type: mongoose.Schema.ObjectId, ref: 'Profile', required: true }
+    account_type: { type: mongoose.Schema.ObjectId, ref: 'Profile', required: true },
+    ip_address: { type: String, default: ''}
 }, { timestamps: true });
 
 UserSchema.pre('save', async function() {
