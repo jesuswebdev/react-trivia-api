@@ -13,7 +13,7 @@ const questionSubSchema = new Schema({
 
 const GameSchema = new Schema({
     questions: { type: [questionSubSchema], required: true },
-    user: { type: mongoose.Schema.ObjectId, ref: 'User', required: true },
+    user: { type: String, default: 'anonymous' },
     victory: { type: Boolean, default: false },
     duration: { type: Number, default: 0 },
     difficulty: { type: String, required: true, enum: ['easy', 'medium', 'hard'] },

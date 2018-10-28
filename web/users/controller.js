@@ -173,7 +173,6 @@ exports.register = async (req, h) => {
     }
 
     let createdUser = null;
-
     try {
         createdUser = await User({
             ...req.payload,

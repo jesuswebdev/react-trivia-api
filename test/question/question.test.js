@@ -36,11 +36,12 @@ experiment('Question Route Test: ', () => {
         tags: ['primera guerra mundial', 'guerra mundial', 'guerra']
     };
 
-    experiment.skip('POST /questions', async () => {
+    experiment('POST /questions', async () => {
 
         let options = null;
         
         beforeEach(async () => {
+            options = null;
             await Category.deleteMany({});
             const { _id: categoryId } = await Category({ title: 'Historia' }).save();
             options = {
@@ -72,7 +73,7 @@ experiment('Question Route Test: ', () => {
         });
 
         test('fails when options array is more than 4', async () => {
-            options.payload.options = options.payload.options.push({title: 'hola mundo', correct_answer: false});
+            options.payload.options = options.payload.options.concat({title: 'hola mundo', correct_answer: false});
             const {statusCode} = await server.inject(options);
             expect(statusCode).to.equal(400);
         });
@@ -144,13 +145,13 @@ experiment('Question Route Test: ', () => {
         });
 
         test('tags array cannot be empty', async () => {
-            options.payload.tags = [];
+            options.payload.tags = undefined;
             const {statusCode} = await server.inject(options);
             expect(statusCode).to.equal(400);
         });
 
         test('fails when a tag is not 4 characters long or more', async () => {
-            options.payload.tags = ['', true, 123, {}];
+            options.payload.tags = ['asa'];
             const {statusCode} = await server.inject(options);
             expect(statusCode).to.equal(400);
         });
@@ -180,7 +181,7 @@ experiment('Question Route Test: ', () => {
         });
     });
     
-    experiment.skip('GET /questions', async () => {
+    experiment('GET /questions', async () => {
 
         let options;
 
@@ -222,7 +223,7 @@ experiment('Question Route Test: ', () => {
         });
     });
 
-    experiment.skip('GET /questions/{id}', async () => {
+    experiment('GET /questions/{id}', async () => {
         let options;
 
         let qId = null;
@@ -279,7 +280,7 @@ experiment('Question Route Test: ', () => {
 
     });
 
-    experiment.skip('PUT /questions/{id}', async () => {
+    experiment('PUT /questions/{id}', async () => {
         let options;
 
         let qId = null;
@@ -429,7 +430,7 @@ experiment('Question Route Test: ', () => {
         });
     });
 
-    experiment.skip('DELETE /questions/{id}', async () => {
+    experiment('DELETE /questions/{id}', async () => {
 
         let options;
         let qId = null;
@@ -472,7 +473,7 @@ experiment('Question Route Test: ', () => {
 
     });
     
-    experiment.skip('POST /questions/suggestions', async () => {
+    experiment('POST /questions/suggestions', async () => {
         
         let options;
         
@@ -617,7 +618,7 @@ experiment('Question Route Test: ', () => {
 
     });
 
-    experiment.skip('GET /questions/suggestions/{id}/{status}', async () => {
+    experiment('GET /questions/suggestions/{id}/{status}', async () => {
         let options;
         let qId;
         
@@ -690,7 +691,7 @@ experiment('Question Route Test: ', () => {
         });
     });
 
-    experiment.skip('GET /questions/suggestions', async () => {
+    experiment('GET /questions/suggestions', async () => {
         let options;
         
         beforeEach(async () => {

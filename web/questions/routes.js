@@ -28,11 +28,11 @@ module.exports = {
                         category: Joi.string().alphanum().trim().length(24).required(),
                         difficulty: Joi.string().only(['easy', 'medium', 'hard']).required(),
                         tags: Joi.array().items(
-                            Joi.string().min(4).strict()
-                        ),
+                            Joi.string().trim().min(4)
+                        ).required(),
                         did_you_know: Joi.string().min(8).optional(),
                         link: Joi.string().regex(/^http/).min(10).optional()
-                    }).options({ stripUnknown: true }),
+                    }),
                     query: false
                 }
             }
@@ -203,11 +203,7 @@ module.exports = {
             path: '/newgame/{difficulty}',
             handler: Question.newgame,
             options: {
-                auth: {
-                    access: {
-                        scope: ['read:questions/newgame']
-                    }
-                },
+                auth: false,
                 validate: {
                     params: Joi.object({
                         difficulty: Joi.string().only(['easy', 'medium', 'hard']).required()

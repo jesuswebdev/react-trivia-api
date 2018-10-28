@@ -94,32 +94,16 @@ module.exports = {
                         title: Joi.string().trim().min(4),
                         permissions: Joi.object({
                             create: Joi.array().min(1).items(
-                                Joi.object({
-                                    description: Joi.string().min(4).trim().required(),
-                                    value: Joi.string().lowercase().min(7).trim().regex(/^create:/).required(),
-                                    active: Joi.bool().required()
-                                })
+                                Joi.string().lowercase().min(7).trim().regex(/^create:/)
                             ),
                             read: Joi.array().min(1).items(
-                                Joi.object({
-                                    description: Joi.string().min(4).trim().required(),
-                                    value: Joi.string().lowercase().min(7).trim().regex(/^read:/).required(),
-                                    active: Joi.bool().required()
-                                })
+                                Joi.string().lowercase().min(7).trim().regex(/^read:/)
                             ),
                             update: Joi.array().min(1).items(
-                                Joi.object({
-                                    description: Joi.string().min(4).trim().required(),
-                                    value: Joi.string().lowercase().min(7).trim().regex(/^update:/).required(),
-                                    active: Joi.bool().required()
-                                })
+                                Joi.string().lowercase().min(7).trim().regex(/^update:/)
                             ),
                             delete: Joi.array().min(1).items(
-                                Joi.object({
-                                    description: Joi.string().min(4).trim().required(),
-                                    value: Joi.string().lowercase().min(7).trim().regex(/^delete:/).required(),
-                                    active: Joi.bool().required()
-                                })
+                                Joi.string().lowercase().min(7).trim().regex(/^delete:/)
                             )
                         })
                     }).required(),

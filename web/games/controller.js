@@ -8,7 +8,6 @@ const { incrementQuestionAnswered } = require('../questions/controller');
 const { iron: { password: ironPassword } } = require('../../config/config');
 
 exports.create = async (req, h) => {
-
     let gameToken = null;
 
     try {
@@ -48,11 +47,10 @@ exports.create = async (req, h) => {
             duration: prev.duration + curr.duration,
             timed_out: prev.timed_out || curr.timed_out,
             defeat: prev.defeat || !curr.answered || !correct,
-            incorrect_answers: !correct ? prev.incorrect_answers + 1 : prev.incorrect_answers,
-            correct_answers: correct ? prev.correct_answers + 1 : prev.correct_answers
+            incorrect_answers: curr.answered && !correct ? prev.incorrect_answers + 1 : prev.incorrect_answers,
+            correct_answers: curr.answered && correct ? prev.correct_answers + 1 : prev.correct_answers
         };
     }, { duration: 0, timed_out: false, defeat: false, incorrect_answers: 0, correct_answers: 0 });
-
     if (gameInfo.incorrect_answers > 1) {
         return Boom.badRequest('Muchas respuestas incorrectas');
     }
@@ -61,6 +59,7 @@ exports.create = async (req, h) => {
     try {
         createdGame = await Game.findByIdAndUpdate(gameToken.game_id, {
             $set: {
+                user: req.payload.name || 'anonymous',
                 questions: req.payload.questions,
                 victory: !gameInfo.defeat,
                 duration: gameInfo.duration,
@@ -70,7 +69,7 @@ exports.create = async (req, h) => {
             }
         }, { new: true });
 
-        await User.findByIdAndUpdate(req.auth.credentials.id, { $inc: { total_correct_answers: gameInfo.correct_answers, games_played: 1 }});
+        // await User.findByIdAndUpdate(req.auth.credentials.id, { $inc: { total_correct_answers: gameInfo.correct_answers, games_played: 1 }});
         
         req.payload.questions.map(async (question) => {
             if (question.answered) {
@@ -136,15 +135,15 @@ exports.stats = async (req, h) => {
         }
     };
 
-    stats.easy.fast = await Game.find({$and: [ { difficulty: 'easy' }, { total_questions: 10 }, { victory: true } ]}, { user: true, duration: true, createdAt: true }).populate('user', 'name').sort({ duration: 1 }).limit(10);
-    stats.easy.normal = await Game.find({$and: [ { difficulty: 'easy' }, { total_questions: 25 }, { victory: true } ]}, { user: true, duration: true, createdAt: true }).populate('user', 'name').sort({ duration: 1 }).limit(10);
-    stats.easy.extended = await Game.find({$and: [ { difficulty: 'easy' }, { total_questions: 50 }, { victory: true } ]}, { user: true, duration: true, createdAt: true }).populate('user', 'name').sort({ duration: 1 }).limit(10);
-    stats.medium.fast = await Game.find({$and: [ { difficulty: 'medium' }, { total_questions: 10 }, { victory: true } ]}, { user: true, duration: true, createdAt: true }).populate('user', 'name').sort({ duration: 1 }).limit(10);
-    stats.medium.normal = await Game.find({$and: [ { difficulty: 'medium' }, { total_questions: 25 }, { victory: true } ]}, { user: true, duration: true, createdAt: true }).populate('user', 'name').sort({ duration: 1 }).limit(10);
-    stats.medium.extended = await Game.find({$and: [ { difficulty: 'medium' }, { total_questions: 50 }, { victory: true } ]}, { user: true, duration: true, createdAt: true }).populate('user', 'name').sort({ duration: 1 }).limit(10);
-    stats.hard.fast = await Game.find({$and: [ { difficulty: 'hard' }, { total_questions: 10 }, { victory: true } ]}, { user: true, duration: true, createdAt: true }).populate('user', 'name').sort({ duration: 1 }).limit(10);
-    stats.hard.normal = await Game.find({$and: [ { difficulty: 'hard' }, { total_questions: 25 }, { victory: true } ]}, { user: true, duration: true, createdAt: true }).populate('user', 'name').sort({ duration: 1 }).limit(10);
-    stats.hard.extended = await Game.find({$and: [ { difficulty: 'hard' }, { total_questions: 50 }, { victory: true } ]}, { user: true, duration: true, createdAt: true }).populate('user', 'name').sort({ duration: 1 }).limit(10);
+    stats.easy.fast = await Game.find({$and: [ { difficulty: 'easy' }, { total_questions: 10 }, { victory: true } ]}, { user: true, duration: true, createdAt: true }).sort({ duration: 1 }).limit(10);
+    stats.easy.normal = await Game.find({$and: [ { difficulty: 'easy' }, { total_questions: 25 }, { victory: true } ]}, { user: true, duration: true, createdAt: true }).sort({ duration: 1 }).limit(10);
+    stats.easy.extended = await Game.find({$and: [ { difficulty: 'easy' }, { total_questions: 50 }, { victory: true } ]}, { user: true, duration: true, createdAt: true }).sort({ duration: 1 }).limit(10);
+    stats.medium.fast = await Game.find({$and: [ { difficulty: 'medium' }, { total_questions: 10 }, { victory: true } ]}, { user: true, duration: true, createdAt: true }).sort({ duration: 1 }).limit(10);
+    stats.medium.normal = await Game.find({$and: [ { difficulty: 'medium' }, { total_questions: 25 }, { victory: true } ]}, { user: true, duration: true, createdAt: true }).sort({ duration: 1 }).limit(10);
+    stats.medium.extended = await Game.find({$and: [ { difficulty: 'medium' }, { total_questions: 50 }, { victory: true } ]}, { user: true, duration: true, createdAt: true }).sort({ duration: 1 }).limit(10);
+    stats.hard.fast = await Game.find({$and: [ { difficulty: 'hard' }, { total_questions: 10 }, { victory: true } ]}, { user: true, duration: true, createdAt: true }).sort({ duration: 1 }).limit(10);
+    stats.hard.normal = await Game.find({$and: [ { difficulty: 'hard' }, { total_questions: 25 }, { victory: true } ]}, { user: true, duration: true, createdAt: true }).sort({ duration: 1 }).limit(10);
+    stats.hard.extended = await Game.find({$and: [ { difficulty: 'hard' }, { total_questions: 50 }, { victory: true } ]}, { user: true, duration: true, createdAt: true }).sort({ duration: 1 }).limit(10);
 
     return stats;
 };

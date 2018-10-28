@@ -198,7 +198,7 @@ exports.newgame = async (req, h) => {
     const question_count = req.query.question_count;
 
     try {
-        foundQuestions = await Question.find({ $and: [{ difficulty: difficulty }, { state: 'approved' }] }, 
+        foundQuestions = await Question.find({ $and: [{ difficulty }, { state: 'approved' }] }, 
             { title: true, options: true, difficulty: true, category: true, did_you_know: true, link: true })
             .populate('category', 'title');
         if (foundQuestions.length === 0) {
@@ -217,7 +217,6 @@ exports.newgame = async (req, h) => {
     try {
         newgame = await Game({
             questions: questionIdArray,
-            user: req.auth.credentials.id,
             difficulty,
             total_questions: question_count,
             state: 'started'

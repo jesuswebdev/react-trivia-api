@@ -11,13 +11,10 @@ module.exports = {
             path: '/',
             handler: Game.create,
             options: {
-                auth: {
-                    access: {
-                        scope: ['create:games']
-                    }
-                },
+                auth: false,
                 validate: {
                     payload: Joi.object({
+                        name: Joi.string().trim().min(2).max(16),
                         questions: Joi.array().min(10).max(50).items(
                             Joi.object({
                                 question: Joi.string().trim().length(24).alphanum().required(),

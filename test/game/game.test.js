@@ -59,12 +59,12 @@ experiment('Game Route Test: ', () => {
             };
             const { _id: ProfileId } = await Profile({
                 title: 'Test title',
-                type: 'administrador',
+                role: 'administrador',
                 permissions: {
-                    create: [{ description: 'test description', value: 'create:test', active: true }],
-                    read: [{ description: 'test description', value: 'read:test', active: true }],
-                    update: [{ description: 'test description', value: 'update:test', active: true }],
-                    delete: [{ description: 'test description', value: 'delete:test', active: true }]
+                    create: ['create:test'],
+                    read: ['read:test'],
+                    update: ['update:test'],
+                    delete: ['delete:test']
                 }
             }).save();
             const { _id: UserId } = await User({
@@ -114,12 +114,6 @@ experiment('Game Route Test: ', () => {
                 }
             };
 
-        });
-
-        test('returns error 403 when user is not authorized', async () => {
-            options.credentials.scope = {};
-            const {statusCode} = await server.inject(options);
-            expect(statusCode).to.equal(403);
         });
 
         test('returns error when questions array length is less than 10', {timeout: 5000}, async () => {

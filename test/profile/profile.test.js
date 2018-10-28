@@ -33,10 +33,10 @@ experiment('Profile Route Test: ', () => {
                 payload: {
                     title: 'Test title',
                     permissions: {
-                        create: [{ description: 'test description', value: 'create:test', active: true }],
-                        read: [{ description: 'test description', value: 'read:test', active: true }],
-                        update: [{ description: 'test description', value: 'update:test', active: true }],
-                        delete: [{ description: 'test description', value: 'delete:test', active: true }]
+                        create: ['create:test'],
+                        read: ['read:test'],
+                        update: ['update:test'],
+                        delete: ['delete:test']
                     }
                 }
             };
@@ -85,25 +85,25 @@ experiment('Profile Route Test: ', () => {
         });
 
         test('fails when create permissions doesnt start with create:', async () => {
-            options.payload.permissions.create = [{description: 'test description', value: 'crate:test', active: false}];
+            options.payload.permissions.create = ['crate:test'];
             const {statusCode} = await server.inject(options);
             expect(statusCode).to.be.equal(400);
         });
 
         test('fails when read permissions doesnt start with read:', async () => {
-            options.payload.permissions.read = [{description: 'test description', value: 'red:test', active: false}];
+            options.payload.permissions.read = ['red:test'];
             const {statusCode} = await server.inject(options);
             expect(statusCode).to.be.equal(400);
         });
 
         test('fails when update permissions doesnt start with update:', async () => {
-            options.payload.permissions.create = [{description: 'test description', value: 'updte:test', active: false}];
+            options.payload.permissions.create = ['updte:test'];
             const {statusCode} = await server.inject(options);
             expect(statusCode).to.be.equal(400);
         });
 
         test('fails when delete permissions doesnt start with delete:', async () => {
-            options.payload.permissions.create = [{description: 'test description', value: 'dete:test', active: false}];
+            options.payload.permissions.create = ['dete:test'];
             const {statusCode} = await server.inject(options);
             expect(statusCode).to.be.equal(400);
         });
@@ -111,9 +111,9 @@ experiment('Profile Route Test: ', () => {
         test('fails when there is a duplicate title in the database', async () => {
             await Profile({
                 title: 'Test title',
-                type: 'Test type',
+                role: 'Test role',
                 permissions: {
-                    create: [{description: 'test description', value: 'create:test', active: false}]
+                    create: ['create:test']
                 }
             }).save();
             const {statusCode} = await server.inject(options);
@@ -176,19 +176,19 @@ experiment('Profile Route Test: ', () => {
         test('returns an array of profiles', async () => {
             await Profile({
                 title: 'Test testerino2',
-                type: 'test-prof123i3123123le',
+                role: 'test-prof123i3123123le',
                 permissions: {
-                    create: [{description: 'test description', value: 'create:test', active: false}],
-                    read: [{description: 'test description', value: 'read:test', active: false}]
+                    create: ['create:test'],
+                    read: ['read:test']
                 }
             }).save();
             
             await Profile({
                 title: 'Test testerino33',
-                type: 'test-prof123ile33',
+                role: 'test-prof123ile33',
                 permissions: {
-                    create: [{description: 'test description', value: 'create:test', active: false}],
-                    read: [{description: 'test description', value: 'read:test', active: false}]
+                    create: ['create:test'],
+                    read: ['read:test']
                 }
             }).save();
 
@@ -210,10 +210,10 @@ experiment('Profile Route Test: ', () => {
             await Profile.deleteMany({});
             const { _id } = await Profile({
                 title: 'Testerino',
-                type: 'testerino',
+                role: 'testerino',
                 permissions: {
-                    create: [{description: 'test description', value: 'create:test', active: false}],
-                    read: [{description: 'test description', value: 'read:test', active: false}]
+                    create: ['create:test'],
+                    read: ['read:test']
                 }
             }).save();
 
@@ -245,7 +245,7 @@ experiment('Profile Route Test: ', () => {
             expect(statusCode).to.be.equal(200);
             expect(result).to.be.an.object();
             expect(result.title).to.exist().and.to.be.a.string();
-            expect(result.type).to.exist().and.to.be.a.string();
+            expect(result.role).to.exist().and.to.be.a.string();
             expect(result.permissions).to.exist().and.to.be.an.object();
         });
 
@@ -271,13 +271,13 @@ experiment('Profile Route Test: ', () => {
             await Profile.deleteMany({});
             const { _id } = await Profile({
                 title: 'Testerino',
-                type: 'testerino',
+                role: 'testerino',
                 permissions: {
-                    create: [{description: 'test description', value: 'create:test', active: false}],
-                    read: [{description: 'test description', value: 'read:test', active: false}]
+                    create: ['create:test'],
+                    read: ['read:test']
                 }
             }).save();
-            profileId = _id;
+            profileId = _id.toString();
         });
 
         beforeEach(() => {
@@ -290,9 +290,9 @@ experiment('Profile Route Test: ', () => {
                 payload: {
                     title: 'Testerino',
                     permissions: {
-                        create: [{description: 'test2 description', value: 'create:test', active: false}],
-                        read: [{description: 'test3 description', value: 'read:test', active: false}],
-                        update: [{description: 'test3 description', value: 'update:test', active: false}]
+                        create: ['create:test'],
+                        read: ['read:test'],
+                        update: ['update:test']
                         
                     }
                 }
@@ -305,25 +305,25 @@ experiment('Profile Route Test: ', () => {
         });
 
         test('fails when create permissions doesnt start with create:', async () => {
-            options.payload.permissions.create = [{description: 'test description', value: 'crate:test', active: false}];
+            options.payload.permissions.create = ['crate:test'];
             const {statusCode} = await server.inject(options);
             expect(statusCode).to.be.equal(400);
         });
 
         test('fails when read permissions doesnt start with read:', async () => {
-            options.payload.permissions.read = [{description: 'test description', value: 'red:test', active: false}];
+            options.payload.permissions.read = ['red:test'];
             const {statusCode} = await server.inject(options);
             expect(statusCode).to.be.equal(400);
         });
 
         test('fails when update permissions doesnt start with update:', async () => {
-            options.payload.permissions.create = [{description: 'test description', value: 'updte:test', active: false}];
+            options.payload.permissions.create = ['updte:test'];
             const {statusCode} = await server.inject(options);
             expect(statusCode).to.be.equal(400);
         });
 
         test('fails when delete permissions doesnt start with delete:', async () => {
-            options.payload.permissions.create = [{description: 'test description', value: 'dete:test', active: false}];
+            options.payload.permissions.create = ['dete:test'];
             const {statusCode} = await server.inject(options);
             expect(statusCode).to.be.equal(400);
         });
@@ -342,7 +342,7 @@ experiment('Profile Route Test: ', () => {
             const {statusCode, result} = await server.inject(options);
             expect(statusCode).to.be.equal(200);
             expect(result.title).to.be.a.string().and.to.be.equal(options.payload.title);
-            expect(result.type).to.be.a.string();
+            expect(result.role).to.be.a.string();
             expect(result.permissions).to.be.an.object();
         });
 
@@ -368,12 +368,12 @@ experiment('Profile Route Test: ', () => {
             await Profile.deleteMany({});
             const { _id } = await Profile({
                 title: 'Testerino',
-                type: 'testerino',
+                role: 'testerino',
                 permissions: {
-                    create: [{ description: 'test description', value: 'create:test', active: true }],
-                    read: [{ description: 'test description', value: 'read:test', active: true }],
-                    update: [{ description: 'test description', value: 'update:test', active: true }],
-                    delete: [{ description: 'test description', value: 'delete:test', active: true }]
+                    create: ['create:test'],
+                    read: ['read:test'],
+                    update: ['update:test'],
+                    delete: ['delete:test']
                 }
             }).save();
 

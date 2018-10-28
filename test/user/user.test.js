@@ -17,27 +17,27 @@ experiment('User Route Test: ', () => {
         await Profile.deleteMany({});
         const { _id: adminId } = await Profile({
             title: 'Administrator',
-            type: 'admin',
+            role: 'administrador',
             permissions: {
-                create: [{ description: 'test description', value: 'create:test', active: true }],
-                read: [{ description: 'test description', value: 'read:test', active: true }],
-                update: [{ description: 'test description', value: 'update:test', active: true }],
-                delete: [{ description: 'test description', value: 'delete:test', active: true }]
+                create: ['create:test'],
+                read: ['read:test'],
+                update: ['update:test'],
+                delete: ['delete:test']
             }
         }).save();
-        adminProfile = adminId;
+        adminProfile = adminId.toString();
         const { _id } = await Profile({
             title: 'User',
-            type: 'user',
+            role: 'user',
             permissions: {
-                create: [{ description: 'test description', value: 'create:test', active: true }],
-                read: [{ description: 'test description', value: 'read:test', active: true }],
-                update: [{ description: 'test description', value: 'update:test', active: true }],
-                delete: [{ description: 'test description', value: 'delete:test', active: true }]
+                create: ['create:test'],
+                read: ['read:test'],
+                update: ['update:test'],
+                delete: ['delete:test']
             }
         }).save();
 
-        userProfile = _id;
+        userProfile = _id.toString();
 
     });
 
@@ -217,8 +217,7 @@ experiment('User Route Test: ', () => {
                 payload: {
                     name: 'Usuario',
                     email: 'usuario@usuario.com',
-                    password: 'usuario123',
-                    account_type: userProfile
+                    password: 'usuario123'
                 }
             };
         });
@@ -352,7 +351,6 @@ experiment('User Route Test: ', () => {
             expect(result.token).to.be.a.string();
             expect(result.user.name).to.be.a.string();
             expect(result.user.email).to.be.a.string();
-            expect(result.user.role).to.be.a.string();
             expect(result.user.id).to.be.an.object();
         });
 
@@ -431,7 +429,6 @@ experiment('User Route Test: ', () => {
             expect(result.token).to.be.a.string();
             expect(result.user.name).to.be.a.string();
             expect(result.user.email).to.be.a.string();
-            expect(result.user.role).to.be.a.string();
             expect(result.user.id).to.be.an.object();
         });
     });
