@@ -71,6 +71,21 @@ const init = async () => {
         }
     ]);
 
+    server.route({
+        method: 'GET',
+        path: '/health',
+        handler: (req, h) => {
+            return { ok: true };
+        },
+        options: {
+            auth: false,
+            validate: {
+                payload: false,
+                query: false
+            }
+        }
+    });
+
     await server.start();
     console.log(`Server running at: ${server.info.uri}`);
 };
