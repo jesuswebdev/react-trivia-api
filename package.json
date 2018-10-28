@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "test": "lab --assert code --leaks --verbose",
-    "start": "nodemon server"
+    "start": "node server"
   },
   "author": "jesuswebdev",
   "license": "ISC",
