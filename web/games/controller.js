@@ -26,7 +26,7 @@ exports.create = async (req, h) => {
         }, false);
     
         if (!sameQuestions) {
-            return Boom.badRequest('Preguntas no validas');
+            return Boom.badRequest('Preguntas no válidas');
         }
     } catch (error) {
         return Boom.internal();

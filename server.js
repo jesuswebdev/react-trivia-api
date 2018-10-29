@@ -33,6 +33,10 @@ const init = async () => {
                 info: {
                     title: 'React Trivia API Documentation',
                     version: pkg.version
+                },
+                options: {
+                    reuseDefinitions: false,
+                    definitionPrefix: 'useLabel'
                 }
             }
         ]);
