@@ -81,7 +81,7 @@ exports.findById = async (req, h) => {
     try {
         foundQuestion = await Question.findById(req.params.id).populate('category', 'title');
         if (!foundQuestion) {
-            return Boom.notFound('No se encontro el recurso');
+            return Boom.notFound('No se encontró el recurso');
         }
     } catch (error) {
         return Boom.internal();

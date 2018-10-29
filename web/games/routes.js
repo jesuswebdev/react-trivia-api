@@ -80,15 +80,15 @@ module.exports = {
             }
         });
 
-        //get /stats
+        //get /top
         server.route({
             method: 'GET',
-            path: '/stats',
+            path: '/top',
             handler: Game.stats,
             options: {
-                description: 'Obtener tablas de posiciones',
-                notes: 'Obtener las tablas de posiciones para todas las dificultades y modos de juego',
-                tags: ['api', 'stats'],
+                description: 'Obtener tablas de posiciones del Top 10',
+                notes: 'Obtener las tablas de posiciones del Top 10 para todas las dificultades y modos de juego',
+                tags: ['api', 'top'],
                 auth: false,
                 validate: {
                     payload: false,
