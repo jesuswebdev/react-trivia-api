@@ -51,7 +51,12 @@ module.exports = {
                 },
                 validate: {
                     payload: false,
-                    query: false
+                    query: {
+                        category: Joi.string().trim().alphanum().length(24),
+                        difficulty: Joi.string().trim().only(['easy', 'medium', 'hard']),
+                        limit: Joi.number().integer().min(1),
+                        offset: Joi.number().integer().min(1)
+                    }
                 }
             }
         });
@@ -203,9 +208,6 @@ module.exports = {
             path: '/newgame/{difficulty}',
             handler: Question.newgame,
             options: {
-                description: 'Juego Nuevo',
-                notes: 'Obtener preguntas para un juego nuevo',
-                tags: ['api'],
                 auth: false,
                 validate: {
                     params: Joi.object({
@@ -216,6 +218,9 @@ module.exports = {
                         question_count: Joi.number().only([10, 25, 50]).description('Cantidad de preguntas').required()
                     }
                 },
+                description: 'Juego Nuevo',
+                notes: 'Obtener preguntas para un juego nuevo',
+                tags: ['api', 'new'],
                 plugins: {
                     'hapi-swagger': {
                         responses: {

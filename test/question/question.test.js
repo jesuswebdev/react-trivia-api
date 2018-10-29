@@ -184,17 +184,46 @@ experiment('Question Route Test: ', () => {
     experiment('GET /questions', async () => {
 
         let options;
+        let catId;
 
         beforeEach(async () => {
             await Category.deleteMany({});
             await Question.deleteMany({});
             const { _id: categoryId } = await Category({ title: 'Historia' }).save();
-
-            await Question({
-                ...mockQuestion,
-                category: categoryId
-            }).save();
-
+            catId = categoryId.toString();
+            const { _id: fictionId } = await Category({ title: 'Ficción' }).save();
+            
+            for (let i = 0; i < 50; i++) {
+                if(i < 13) {
+                    await Question({
+                        ...mockQuestion,
+                        category: catId,
+                        difficulty: 'easy'
+                    }).save();
+                }
+                if(i >= 13 && i < 26) {
+                    await Question({
+                        ...mockQuestion,
+                        category: catId,
+                        difficulty: 'medium'
+                    }).save();
+                }
+                if(i >= 26 && i< 39) {
+                    await Question({
+                        ...mockQuestion,
+                        category: catId,
+                        difficulty: 'hard'
+                    }).save();
+                }
+                else {
+                    await Question({
+                        ...mockQuestion,
+                        category: fictionId,
+                        difficulty: 'easy'
+                    }).save();
+                }
+            }
+            
             options = {
                 method: 'GET',
                 url: '/questions',
@@ -207,7 +236,7 @@ experiment('Question Route Test: ', () => {
         test('returns an array of questions when authorized', async () => {
             const {statusCode, result} = await server.inject(options);
             expect(statusCode).to.equal(200);
-            expect(result.questions).to.exist().and.to.be.an.array();
+            expect(result.results).to.exist().and.to.be.an.array();
         });
 
         test('returns error 403 when not authorized', async () => {
@@ -219,8 +248,204 @@ experiment('Question Route Test: ', () => {
         test('returns the questions count', async () => {
             const {statusCode, result} = await server.inject(options);
             expect(statusCode).to.equal(200);
-            expect(result.question_count).to.exist().and.to.be.a.number();
+            expect(result.results_count).to.exist().and.to.be.a.number();
         });
+
+        test('returns an error when the category is not valid', async () => {
+            options.url += `?category=${catId}1`;
+            const {statusCode} = await server.inject(options);
+            expect(statusCode).to.be.equal(400);
+        });
+
+        test('returns an error when the difficulty is not [easy, medium, hard]', async () => {
+            options.url += `?difficulty=wtfgg`;
+            const {statusCode} = await server.inject(options);
+            expect(statusCode).to.be.equal(400);
+        });
+
+        test('returns an error when the limit is not a number', async () => {
+            options.url += `?limit=limite3`;
+            const {statusCode} = await server.inject(options);
+            expect(statusCode).to.be.equal(400);
+        });
+
+        test('returns an error when the offset is not a number', async () => {
+            options.url += `?offset1`;
+            const {statusCode} = await server.inject(options);
+            expect(statusCode).to.be.equal(400);
+        });
+
+        test('returns an array of questions of category: Historia', async () => {
+            options.url += `?category=${catId}`;
+            const {statusCode, result} = await server.inject(options);
+            expect(statusCode).to.be.equal(200);
+            expect(result).to.be.an.object().and.to.contain(['results', 'results_count']);
+            expect(result.results).to.be.an.array();
+            expect(result.results_count).to.be.a.number();
+            result.results.map(res => {
+                expect(res.category._id.toString()).to.be.equal(catId);
+            })
+        });
+
+        test('returns an array of easy questions', async () => {
+            options.url += `?difficulty=easy`;
+            const {statusCode, result} = await server.inject(options);
+            expect(statusCode).to.be.equal(200);
+            expect(result).to.be.an.object().and.to.contain(['results', 'results_count']);
+            expect(result.results).to.be.an.array();
+            expect(result.results_count).to.be.a.number();
+            result.results.map(res => {
+                expect(res.difficulty).to.be.equal('easy');
+            })
+        });
+
+        test('returns an array of medium questions', async () => {
+            options.url += `?difficulty=medium`;
+            const {statusCode, result} = await server.inject(options);
+            expect(statusCode).to.be.equal(200);
+            expect(result).to.be.an.object().and.to.contain(['results', 'results_count']);
+            expect(result.results).to.be.an.array();
+            expect(result.results_count).to.be.a.number();
+            result.results.map(res => {
+                expect(res.difficulty).to.be.equal('medium');
+            })
+        });
+
+        test('returns an array of hard questions', async () => {
+            options.url += `?difficulty=hard`;
+            const {statusCode, result} = await server.inject(options);
+            expect(statusCode).to.be.equal(200);
+            expect(result).to.be.an.object().and.to.contain(['results', 'results_count']);
+            expect(result.results).to.be.an.array();
+            expect(result.results_count).to.be.a.number();
+            result.results.map(res => {
+                expect(res.difficulty).to.be.equal('hard');
+            })
+        });
+
+        test('returns an array of 10 questions', async () => {
+            options.url += `?limit=10`;
+            const {statusCode, result} = await server.inject(options);
+            expect(statusCode).to.be.equal(200);
+            expect(result).to.be.an.object().and.to.contain(['results', 'results_count']);
+            expect(result.results).to.be.an.array();
+            expect(result.results_count).to.be.a.number().and.to.be.equal(10);
+        });
+
+        test('returns an array of 10 easy questions', async () => {
+            options.url += `?limit=10&difficulty=easy`;
+            const {statusCode, result} = await server.inject(options);
+            expect(statusCode).to.be.equal(200);
+            expect(result).to.be.an.object().and.to.contain(['results', 'results_count']);
+            expect(result.results).to.be.an.array();
+            expect(result.results_count).to.be.a.number().and.to.be.equal(10);
+            result.results.map(res => {
+                expect(res.difficulty).to.be.equal('easy');
+            });
+        });
+
+        test('returns an array of 10 medium questions', async () => {
+            options.url += `?limit=10&difficulty=medium`;
+            const {statusCode, result} = await server.inject(options);
+            expect(statusCode).to.be.equal(200);
+            expect(result).to.be.an.object().and.to.contain(['results', 'results_count']);
+            expect(result.results).to.be.an.array();
+            expect(result.results_count).to.be.a.number().and.to.be.equal(10);
+            result.results.map(res => {
+                expect(res.difficulty).to.be.equal('medium');
+            });
+        });
+
+        test('returns an array of 10 hard questions', async () => {
+            options.url += `?limit=10&difficulty=hard`;
+            const {statusCode, result} = await server.inject(options);
+            expect(statusCode).to.be.equal(200);
+            expect(result).to.be.an.object().and.to.contain(['results', 'results_count']);
+            expect(result.results).to.be.an.array();
+            expect(result.results_count).to.be.a.number().and.to.be.equal(10);
+            result.results.map(res => {
+                expect(res.difficulty).to.be.equal('hard');
+            });
+        });
+
+        test('returns an array of 10 easy questions of category Historia', async () => {
+            options.url += `?limit=10&difficulty=easy&category=${catId}`;
+            const {statusCode, result} = await server.inject(options);
+            expect(statusCode).to.be.equal(200);
+            expect(result).to.be.an.object().and.to.contain(['results', 'results_count']);
+            expect(result.results).to.be.an.array();
+            expect(result.results_count).to.be.a.number().and.to.be.equal(10);
+            result.results.map(res => {
+                expect(res.difficulty).to.be.equal('easy');
+                expect(res.category._id.toString()).to.be.equal(catId);
+            });
+        });
+
+        test('returns an array of 10 medium questions of category Historia', async () => {
+            options.url += `?limit=10&difficulty=medium&category=${catId}`;
+            const {statusCode, result} = await server.inject(options);
+            expect(statusCode).to.be.equal(200);
+            expect(result).to.be.an.object().and.to.contain(['results', 'results_count']);
+            expect(result.results).to.be.an.array();
+            expect(result.results_count).to.be.a.number().and.to.be.equal(10);
+            result.results.map(res => {
+                expect(res.difficulty).to.be.equal('medium');
+                expect(res.category._id.toString()).to.be.equal(catId);
+            });
+        });
+
+        test('returns an array of 10 hard questions of category Historia', async () => {
+            options.url += `?limit=10&difficulty=hard&category=${catId}`;
+            const {statusCode, result} = await server.inject(options);
+            expect(statusCode).to.be.equal(200);
+            expect(result).to.be.an.object().and.to.contain(['results', 'results_count']);
+            expect(result.results).to.be.an.array();
+            expect(result.results_count).to.be.a.number().and.to.be.equal(10);
+            result.results.map(res => {
+                expect(res.difficulty).to.be.equal('hard');
+                expect(res.category._id.toString()).to.be.equal(catId);
+            });
+        });
+
+        test('returns an array of 3 easy questions of category Historia due to offset', async () => {
+            options.url += `?limit=10&difficulty=easy&category=${catId}&offset=10`;
+            const {statusCode, result} = await server.inject(options);
+            expect(statusCode).to.be.equal(200);
+            expect(result).to.be.an.object().and.to.contain(['results', 'results_count']);
+            expect(result.results).to.be.an.array();
+            expect(result.results_count).to.be.a.number().and.to.be.equal(3);
+            result.results.map(res => {
+                expect(res.difficulty).to.be.equal('easy');
+                expect(res.category._id.toString()).to.be.equal(catId);
+            });
+        });
+
+        test('returns an array of 3 medium questions of category Historia due to offset', async () => {
+            options.url += `?limit=10&difficulty=medium&category=${catId}&offset=10`;
+            const {statusCode, result} = await server.inject(options);
+            expect(statusCode).to.be.equal(200);
+            expect(result).to.be.an.object().and.to.contain(['results', 'results_count']);
+            expect(result.results).to.be.an.array();
+            expect(result.results_count).to.be.a.number().and.to.be.equal(3);
+            result.results.map(res => {
+                expect(res.difficulty).to.be.equal('medium');
+                expect(res.category._id.toString()).to.be.equal(catId);
+            });
+        });
+
+        test('returns an array of 3 hard questions of category Historia due to offset', async () => {
+            options.url += `?limit=10&difficulty=hard&category=${catId}&offset=10`;
+            const {statusCode, result} = await server.inject(options);
+            expect(statusCode).to.be.equal(200);
+            expect(result).to.be.an.object().and.to.contain(['results', 'results_count']);
+            expect(result.results).to.be.an.array();
+            expect(result.results_count).to.be.a.number().and.to.be.equal(3);
+            result.results.map(res => {
+                expect(res.difficulty).to.be.equal('hard');
+                expect(res.category._id.toString()).to.be.equal(catId);
+            });
+        });
+
     });
 
     experiment('GET /questions/{id}', async () => {

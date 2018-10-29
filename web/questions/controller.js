@@ -49,14 +49,30 @@ exports.create = async (req, h) => {
 
 exports.find = async (req, h) => {
     let foundQuestions = null;
+    let query = {};
+    let limit = 0;
+    let skip = 0;
+
+    if (req.query.category) {
+        query.category = req.query.category;
+    }
+    if (req.query.difficulty) {
+        query.difficulty = req.query.difficulty;
+    }
+    if (req.query.offset) {
+        skip = req.query.offset;
+    }
+    if (req.query.limit) {
+        limit = req.query.limit
+    }
 
     try {
-        foundQuestions = await Question.find({}).populate('category', 'title');
+        foundQuestions = await Question.find(query).skip(skip).limit(limit).populate('category', 'title');
     } catch (error) {
         return Boom.internal();
     }
 
-    return { questions: foundQuestions, question_count: foundQuestions.length };
+    return { results: foundQuestions, results_count: foundQuestions.length };
 };
 
 exports.findById = async (req, h) => {
