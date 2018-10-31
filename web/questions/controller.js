@@ -49,6 +49,7 @@ exports.create = async (req, h) => {
 
 exports.find = async (req, h) => {
     let foundQuestions = null;
+    let totalResults = null;
     let query = {};
     let limit = 0;
     let skip = 0;
@@ -68,11 +69,12 @@ exports.find = async (req, h) => {
 
     try {
         foundQuestions = await Question.find(query).skip(skip).limit(limit).populate('category', 'title');
+        totalResults = await Question.countDocuments(query);
     } catch (error) {
         return Boom.internal();
     }
 
-    return { results: foundQuestions, results_count: foundQuestions.length };
+    return { results: foundQuestions, results_count: totalResults };
 };
 
 exports.findById = async (req, h) => {
@@ -268,3 +270,21 @@ exports.incrementQuestionAnswered = async (questionId, selectedOption) => {
         await Question.findByIdAndUpdate(questionId, { $inc: { times_answered: 1 } });
     }
 };
+
+exports.stats = async (req, h) => {
+    let stats = {
+        total_questions: 0,
+        total_easy_questions: 0,
+        total_medium_questions: 0,
+        total_hard_questions: 0,
+        questions_waiting_approval: 0
+    };
+
+    stats.total_questions = await Question.countDocuments();
+    stats.total_easy_questions = await Question.countDocuments({difficulty: 'easy'});
+    stats.total_medium_questions = await Question.countDocuments({difficulty: 'medium'});
+    stats.total_hard_questions = await Question.countDocuments({difficulty: 'hard'});
+    stats.questions_waiting_approval = await Question.countDocuments({state: 'pending'});
+
+    return stats;
+}

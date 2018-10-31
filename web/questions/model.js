@@ -19,7 +19,8 @@ const QuestionSchema = new Schema({
     state: { type: String, default: 'approved', enum: ['approved', 'rejected', 'pending'] },
     link: { type: String, default: '' },
     times_answered: { type: Number, default: 0 },
-    times_answered_correctly: { type: Number, default: 0 }
+    times_answered_correctly: { type: Number, default: 0 },
+    added_by: { type: String, default: 'anonymous' }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Question', QuestionSchema);

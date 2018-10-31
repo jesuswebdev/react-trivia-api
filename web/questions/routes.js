@@ -276,6 +276,24 @@ module.exports = {
                 }
             }
         });
+
+        server.route({
+            method: 'GET',
+            path: '/stats',
+            handler: Question.stats,
+            options: {
+                auth: false,
+                // auth: {
+                //     access: {
+                //         scope: ['read:questions/stats']
+                //     }
+                // },
+                validate: {
+                    payload: false,
+                    query: false
+                }
+            }
+        })
         
     }
 };

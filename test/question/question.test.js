@@ -445,7 +445,6 @@ experiment('Question Route Test: ', () => {
                 expect(res.category._id.toString()).to.be.equal(catId);
             });
         });
-
     });
 
     experiment('GET /questions/{id}', async () => {
@@ -502,7 +501,6 @@ experiment('Question Route Test: ', () => {
             expect(result.did_you_know).to.exist().and.to.be.a.string();
             
         });
-
     });
 
     experiment('PUT /questions/{id}', async () => {
@@ -694,8 +692,6 @@ experiment('Question Route Test: ', () => {
             const {statusCode} = await server.inject(options);
             expect(statusCode).to.equal(404);
         });
-
-
     });
     
     experiment('POST /questions/suggestions', async () => {
@@ -840,7 +836,6 @@ experiment('Question Route Test: ', () => {
             expect(result).to.be.an.object();
             expect(result.question).to.exist().and.to.be.a.string();
         });
-
     });
 
     experiment('GET /questions/suggestions/{id}/{status}', async () => {
@@ -1111,5 +1106,9 @@ experiment('Question Route Test: ', () => {
                 expect(q.difficulty).to.be.equal('easy');
             });
         });
+    });
+
+    experiment('GET /questions/stats', async () => {
+
     });
 });
