@@ -155,21 +155,6 @@ experiment('Game Route Test: ', () => {
             expect(statusCode).to.equal(400);
         });
 
-        test('fails when too many failed responses', {timeout: 5000}, async () => {
-            const newgame = await getNewGame(10);
-            options.payload = {
-                token: newgame.token,
-                questions: newgame.questions.map(q => {
-                    return {
-                        ...q,
-                        selected_option: 2
-                    };
-                })
-            };
-            const {statusCode} = await server.inject(options);
-            expect(statusCode).to.equal(400);
-        });
-
         test('success when finished game with 10 questions', async () => {
             const newgame = await getNewGame(10);
             options.payload = {

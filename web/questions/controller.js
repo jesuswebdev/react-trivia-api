@@ -65,7 +65,7 @@ exports.find = async (req, h) => {
         skip = req.query.offset;
     }
     if (req.query.limit) {
-        limit = req.query.limit
+        limit = req.query.limit;
     }
 
     try {
@@ -290,4 +290,4 @@ exports.stats = async (req, h) => {
     stats.questions_waiting_approval = await Question.countDocuments({state: 'pending'});
 
     return stats;
-}
+};

@@ -294,7 +294,7 @@ module.exports = {
                     query: false
                 }
             }
-        })
+        });
         
     }
 };

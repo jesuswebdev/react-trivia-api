@@ -144,10 +144,10 @@ experiment('Question Route Test: ', () => {
             expect(statusCode).to.equal(400);
         });
 
-        test('tags array cannot be empty', async () => {
+        test('tags array can be empty', async () => {
             options.payload.tags = undefined;
             const {statusCode} = await server.inject(options);
-            expect(statusCode).to.equal(400);
+            expect(statusCode).to.equal(201);
         });
 
         test('fails when a tag is not 4 characters long or more', async () => {
@@ -284,7 +284,7 @@ experiment('Question Route Test: ', () => {
             expect(result.results_count).to.be.a.number();
             result.results.map(res => {
                 expect(res.category._id.toString()).to.be.equal(catId);
-            })
+            });
         });
 
         test('returns an array of easy questions', async () => {
@@ -296,7 +296,7 @@ experiment('Question Route Test: ', () => {
             expect(result.results_count).to.be.a.number();
             result.results.map(res => {
                 expect(res.difficulty).to.be.equal('easy');
-            })
+            });
         });
 
         test('returns an array of medium questions', async () => {
@@ -308,7 +308,7 @@ experiment('Question Route Test: ', () => {
             expect(result.results_count).to.be.a.number();
             result.results.map(res => {
                 expect(res.difficulty).to.be.equal('medium');
-            })
+            });
         });
 
         test('returns an array of hard questions', async () => {
@@ -320,7 +320,7 @@ experiment('Question Route Test: ', () => {
             expect(result.results_count).to.be.a.number();
             result.results.map(res => {
                 expect(res.difficulty).to.be.equal('hard');
-            })
+            });
         });
 
         test('returns an array of 10 questions', async () => {
@@ -329,7 +329,8 @@ experiment('Question Route Test: ', () => {
             expect(statusCode).to.be.equal(200);
             expect(result).to.be.an.object().and.to.contain(['results', 'results_count']);
             expect(result.results).to.be.an.array();
-            expect(result.results_count).to.be.a.number().and.to.be.equal(10);
+            expect(result.results.length).to.be.equal(10);
+            expect(result.results_count).to.be.a.number();
         });
 
         test('returns an array of 10 easy questions', async () => {
@@ -338,7 +339,8 @@ experiment('Question Route Test: ', () => {
             expect(statusCode).to.be.equal(200);
             expect(result).to.be.an.object().and.to.contain(['results', 'results_count']);
             expect(result.results).to.be.an.array();
-            expect(result.results_count).to.be.a.number().and.to.be.equal(10);
+            expect(result.results.length).to.be.equal(10);
+            expect(result.results_count).to.be.a.number();
             result.results.map(res => {
                 expect(res.difficulty).to.be.equal('easy');
             });
@@ -350,7 +352,8 @@ experiment('Question Route Test: ', () => {
             expect(statusCode).to.be.equal(200);
             expect(result).to.be.an.object().and.to.contain(['results', 'results_count']);
             expect(result.results).to.be.an.array();
-            expect(result.results_count).to.be.a.number().and.to.be.equal(10);
+            expect(result.results.length).to.be.equal(10);
+            expect(result.results_count).to.be.a.number();
             result.results.map(res => {
                 expect(res.difficulty).to.be.equal('medium');
             });
@@ -362,7 +365,8 @@ experiment('Question Route Test: ', () => {
             expect(statusCode).to.be.equal(200);
             expect(result).to.be.an.object().and.to.contain(['results', 'results_count']);
             expect(result.results).to.be.an.array();
-            expect(result.results_count).to.be.a.number().and.to.be.equal(10);
+            expect(result.results.length).to.be.equal(10);
+            expect(result.results_count).to.be.a.number();
             result.results.map(res => {
                 expect(res.difficulty).to.be.equal('hard');
             });
@@ -374,7 +378,8 @@ experiment('Question Route Test: ', () => {
             expect(statusCode).to.be.equal(200);
             expect(result).to.be.an.object().and.to.contain(['results', 'results_count']);
             expect(result.results).to.be.an.array();
-            expect(result.results_count).to.be.a.number().and.to.be.equal(10);
+            expect(result.results.length).to.be.equal(10);
+            expect(result.results_count).to.be.a.number();
             result.results.map(res => {
                 expect(res.difficulty).to.be.equal('easy');
                 expect(res.category._id.toString()).to.be.equal(catId);
@@ -387,7 +392,8 @@ experiment('Question Route Test: ', () => {
             expect(statusCode).to.be.equal(200);
             expect(result).to.be.an.object().and.to.contain(['results', 'results_count']);
             expect(result.results).to.be.an.array();
-            expect(result.results_count).to.be.a.number().and.to.be.equal(10);
+            expect(result.results.length).to.be.equal(10);
+            expect(result.results_count).to.be.a.number();
             result.results.map(res => {
                 expect(res.difficulty).to.be.equal('medium');
                 expect(res.category._id.toString()).to.be.equal(catId);
@@ -400,7 +406,8 @@ experiment('Question Route Test: ', () => {
             expect(statusCode).to.be.equal(200);
             expect(result).to.be.an.object().and.to.contain(['results', 'results_count']);
             expect(result.results).to.be.an.array();
-            expect(result.results_count).to.be.a.number().and.to.be.equal(10);
+            expect(result.results.length).to.be.equal(10);
+            expect(result.results_count).to.be.a.number();
             result.results.map(res => {
                 expect(res.difficulty).to.be.equal('hard');
                 expect(res.category._id.toString()).to.be.equal(catId);
@@ -413,7 +420,8 @@ experiment('Question Route Test: ', () => {
             expect(statusCode).to.be.equal(200);
             expect(result).to.be.an.object().and.to.contain(['results', 'results_count']);
             expect(result.results).to.be.an.array();
-            expect(result.results_count).to.be.a.number().and.to.be.equal(3);
+            expect(result.results.length).to.be.equal(3);
+            expect(result.results_count).to.be.a.number();
             result.results.map(res => {
                 expect(res.difficulty).to.be.equal('easy');
                 expect(res.category._id.toString()).to.be.equal(catId);
@@ -426,7 +434,8 @@ experiment('Question Route Test: ', () => {
             expect(statusCode).to.be.equal(200);
             expect(result).to.be.an.object().and.to.contain(['results', 'results_count']);
             expect(result.results).to.be.an.array();
-            expect(result.results_count).to.be.a.number().and.to.be.equal(3);
+            expect(result.results.length).to.be.equal(3);
+            expect(result.results_count).to.be.a.number();
             result.results.map(res => {
                 expect(res.difficulty).to.be.equal('medium');
                 expect(res.category._id.toString()).to.be.equal(catId);
@@ -439,7 +448,8 @@ experiment('Question Route Test: ', () => {
             expect(statusCode).to.be.equal(200);
             expect(result).to.be.an.object().and.to.contain(['results', 'results_count']);
             expect(result.results).to.be.an.array();
-            expect(result.results_count).to.be.a.number().and.to.be.equal(3);
+            expect(result.results.length).to.be.equal(3);
+            expect(result.results_count).to.be.a.number();
             result.results.map(res => {
                 expect(res.difficulty).to.be.equal('hard');
                 expect(res.category._id.toString()).to.be.equal(catId);
@@ -838,7 +848,7 @@ experiment('Question Route Test: ', () => {
         });
     });
 
-    experiment('GET /questions/suggestions/{id}/{status}', async () => {
+    experiment('POST /questions/suggestions/{id}/{status}', async () => {
         let options;
         let qId;
         
@@ -854,7 +864,7 @@ experiment('Question Route Test: ', () => {
             qId = questionId;
 
             options = {
-                method: 'GET',
+                method: 'POST',
                 url: '/questions/suggestions/' + questionId,
                 credentials: {
                     scope: ['update:suggestions']
@@ -942,9 +952,9 @@ experiment('Question Route Test: ', () => {
             const {statusCode, result} = await server.inject(options);
             expect(statusCode).to.equal(200);
             expect(result).to.be.an.object();
-            expect(result.suggestions).to.be.an.array();
-            result.suggestions.map(s => {
-                expect(s.approved).to.be.false();
+            expect(result.results).to.be.an.array();
+            result.results.map(s => {
+                expect(s.status).to.be.equal('pending');
             });
         });
 
