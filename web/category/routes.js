@@ -34,7 +34,8 @@ module.exports = {
                 auth: {
                     access: {
                         scope: ['read:category']
-                    }
+                    },
+                    mode: 'optional'
                 },
                 validate: {
                     payload: false,

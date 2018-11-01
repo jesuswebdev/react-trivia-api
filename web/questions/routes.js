@@ -14,7 +14,8 @@ module.exports = {
                 auth: {
                     access: {
                         scope: ['create:questions']
-                    }
+                    },
+                    mode: 'optional'
                 },
                 validate: {
                     payload: Joi.object({
@@ -29,7 +30,7 @@ module.exports = {
                         difficulty: Joi.string().only(['easy', 'medium', 'hard']).required(),
                         tags: Joi.array().items(
                             Joi.string().trim().min(4)
-                        ).required(),
+                        ),
                         did_you_know: Joi.string().min(8).optional(),
                         link: Joi.string().regex(/^http/).min(10).optional()
                     }),
@@ -162,9 +163,9 @@ module.exports = {
             }
         });
 
-        //  GET /suggestions/{id}/{status}
+        //  POST /suggestions/{id}/{status}
         server.route({
-            method: 'GET',
+            method: 'POST',
             path: '/suggestions/{id}/{status}',
             handler: Question.changeSuggestionStatus,
             options: {

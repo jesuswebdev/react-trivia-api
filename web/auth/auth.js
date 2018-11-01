@@ -20,7 +20,7 @@ module.exports = {
                     let auth = req.raw.req.headers.authorization || null;
 
                     if (!auth) {
-                        return Boom.unauthorized('No tienes autorización', ['Bearer']);
+                        return h.unauthenticated();
                     }
                     if (!/^Bearer /.test(auth)) {
                         return Boom.badRequest('Token no válido');

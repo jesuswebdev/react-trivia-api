@@ -20,8 +20,8 @@ const GameSchema = new Schema({
     timed_out: { type: Boolean, default: false },
     total_questions: { type: Number, required: true },
     total_correct_answers: { type: Number, default: 0 },
+    total_incorrect_answers: { type: Number, default: 0 },
     state: { type: String, enum: ['started', 'finished'], required: true }
 }, { timestamps: true });
-//total answered questions
 
 module.exports = mongoose.model('Game', GameSchema);

@@ -22,8 +22,14 @@ exports.create = async (req, h) => {
 
 exports.find = async (req, h) => {
     let foundCategories = null;
+    let projection = {};
+
+    if (!req.auth.credentials) {
+        projection = { title: true };
+    }
+
     try {
-        foundCategories = await Category.find({});
+        foundCategories = await Category.find({}, projection);
     } catch (err) {
         return Boom.internal();
     }

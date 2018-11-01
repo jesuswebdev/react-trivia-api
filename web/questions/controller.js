@@ -36,9 +36,10 @@ exports.create = async (req, h) => {
         };
     });
 
+    let state = req.auth.credentials ? 'approved' : 'pending';
+
     try {
-        
-        createdQuestion = await Question(req.payload).save();
+        createdQuestion = await Question({ ...req.payload, state }).save();
         await incrementQuestionCount(req.payload.category, req.payload.difficulty);
     } catch (error) {
         return Boom.internal();
@@ -201,12 +202,12 @@ exports.findSuggestions = async (req, h) => {
     let foundSuggestions;
 
     try {
-        foundSuggestions = await Question.find({ approved: false }).populate('category', 'title');
+        foundSuggestions = await Question.find({ state: 'pending' }).populate('category', 'title');
     } catch (error) {
         return Boom.internal();
     }
 
-    return { suggestions: foundSuggestions, suggestions_count: foundSuggestions.length };
+    return { results: foundSuggestions, results_count: foundSuggestions.length };
 };
 
 exports.newgame = async (req, h) => {
@@ -265,9 +266,11 @@ exports.incrementQuestionAnswered = async (questionId, selectedOption) => {
 
     if (correct) {
         await Question.findByIdAndUpdate(questionId, { $inc: { times_answered: 1, times_answered_correctly: 1 } });
+        Promise.resolve(true);
     }
     else {
         await Question.findByIdAndUpdate(questionId, { $inc: { times_answered: 1 } });
+        Promise.resolve(true);
     }
 };
 
@@ -280,10 +283,10 @@ exports.stats = async (req, h) => {
         questions_waiting_approval: 0
     };
 
-    stats.total_questions = await Question.countDocuments();
-    stats.total_easy_questions = await Question.countDocuments({difficulty: 'easy'});
-    stats.total_medium_questions = await Question.countDocuments({difficulty: 'medium'});
-    stats.total_hard_questions = await Question.countDocuments({difficulty: 'hard'});
+    stats.total_questions = await Question.countDocuments({state: 'approved'});
+    stats.total_easy_questions = await Question.countDocuments({difficulty: 'easy', state: 'approved'});
+    stats.total_medium_questions = await Question.countDocuments({difficulty: 'medium', state: 'approved'});
+    stats.total_hard_questions = await Question.countDocuments({difficulty: 'hard', state: 'approved'});
     stats.questions_waiting_approval = await Question.countDocuments({state: 'pending'});
 
     return stats;
