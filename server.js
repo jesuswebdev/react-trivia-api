@@ -90,6 +90,21 @@ const init = async () => {
         }
     });
 
+    server.route({
+        method: 'GET',
+        path: '/',
+        handler: (req, h) => {
+            return h.redirect(`https://${req.info.host}/documentation`);
+        },
+        options: {
+            auth: false,
+            validate: {
+                payload: false,
+                query: false
+            }
+        }
+    });
+
     await server.start();
     console.log(`Server running at: ${server.info.uri}`);
 };
