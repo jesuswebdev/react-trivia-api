@@ -131,38 +131,6 @@ module.exports = {
             }
         });
 
-        //  POST /suggestions
-        server.route({
-            method: 'POST',
-            path: '/suggestions',
-            handler: Question.createSuggestion,
-            options: {
-                auth: {
-                    access: {
-                        scope: ['create:suggestions']
-                    }
-                },
-                validate: {
-                    payload: Joi.object({
-                        title: Joi.string().trim().min(8).required(),
-                        options: Joi.array().length(4).items(
-                            Joi.object({
-                                text: Joi.string().trim().required(),
-                                correct_answer: Joi.boolean().required()
-                            })
-                        ).required(),
-                        category: Joi.string().alphanum().trim().length(24).required(),
-                        difficulty: Joi.string().only(['easy', 'medium', 'hard']).required(),
-                        tags: Joi.array().min(1).items(
-                            Joi.string().min(4).strict()
-                        ).required(),
-                        did_you_know: Joi.string().min(8).optional(),
-                        link: Joi.string().regex(/^http/).min(10).optional()
-                    }).options({ stripUnknown: true })
-                }
-            }
-        });
-
         //  POST /suggestions/{id}/{status}
         server.route({
             method: 'POST',
@@ -189,7 +157,7 @@ module.exports = {
         server.route({
             method: 'GET',
             path: '/suggestions',
-            handler: Question.findSuggestions,
+            handler: Question.find,
             options: {
                 auth: {
                     access: {
@@ -198,7 +166,12 @@ module.exports = {
                 },
                 validate: {
                     payload: false,
-                    query: false
+                    query: {
+                        category: Joi.string().trim().alphanum().length(24),
+                        difficulty: Joi.string().trim().only(['easy', 'medium', 'hard']),
+                        limit: Joi.number().integer().min(1),
+                        offset: Joi.number().integer().min(1)
+                    }
                 }
             }
         });

@@ -61,6 +61,9 @@ exports.find = async (req, h) => {
     if (req.query.difficulty) {
         query.difficulty = req.query.difficulty;
     }
+    if (req.path === '/questions/suggestions') {
+        query.state = 'pending';
+    }
     if (req.query.offset) {
         skip = req.query.offset;
     }
@@ -140,74 +143,21 @@ exports.remove = async (req, h) => {
     return h.response().code(204);
 };
 
-exports.createSuggestion = async (req, h) => {
-
-    let correctAnswers = req.payload.options.reduce((p, c) => c.correct_answer ? p + 1 : p, 0);
-    if (correctAnswers > 1) {
-        return Boom.badRequest('Solo puede haber una respuesta correcta');
-    }
-    if (correctAnswers === 0) {
-        return Boom.badRequest('Debe existir una respuesta correcta');
-    }
-    
-    let category = await Category.findById(req.payload.category);
-    if (!category) {
-        return Boom.badRequest('La categoria especificada no existe');
-    }
-    
-    let createdQuestion = null;
-
-    req.payload.options = req.payload.options.map((option, index) => {
-        return {
-            ...option,
-            option_id: index
-        };
-    });
-
-    try {
-        createdQuestion = await Question({ ...req.payload, state: 'pending' }).save();
-    } catch (error) {
-        return Boom.internal();
-    }
-
-    return h.response({ question: createdQuestion._id.toString() }).code(201);
-};
-
 exports.changeSuggestionStatus = async (req, h) => {
 
     let question;
+    let setOption = { state: req.params.status === 'approve' ? 'approved' : 'rejected' };
 
     try {
-        if (req.params.status === 'approve') {
-            question = await Question.findByIdAndUpdate(req.params.id, { $set: { state: 'approved' } });
-            if (!question) {
-                return Boom.notFound('El recurso no existe');
-            }
-            await incrementQuestionCount(req.params.id);
-            return { question: question._id.toString() };
+        question = await Question.findByIdAndUpdate(req.params.id, { $set: setOption });
+        if (!question) {
+            return Boom.notFound('El recurso no existe');
         }
-        else if (req.params.status === 'reject') {
-            question = await Question.findByIdAndUpdate(req.params.id, { $set: { state: 'rejected' } });
-            if (!question) {
-                return Boom.notFound('El recurso no existe');
-            }
-            return { question: question._id.toString() };
-        }
+        await incrementQuestionCount(req.params.id);
     } catch (error) {
         return Boom.internal();
     }
-};
-
-exports.findSuggestions = async (req, h) => {
-    let foundSuggestions;
-
-    try {
-        foundSuggestions = await Question.find({ state: 'pending' }).populate('category', 'title');
-    } catch (error) {
-        return Boom.internal();
-    }
-
-    return { results: foundSuggestions, results_count: foundSuggestions.length };
+    return { question: question._id.toString() };
 };
 
 exports.newgame = async (req, h) => {
@@ -263,15 +213,12 @@ exports.incrementQuestionAnswered = async (questionId, selectedOption) => {
 
     const { options } = await Question.findById(questionId);
     let correct = options.find(option => option.option_id === selectedOption).correct_answer;
-
+    let incOptions = { times_answered: 1 };
     if (correct) {
-        await Question.findByIdAndUpdate(questionId, { $inc: { times_answered: 1, times_answered_correctly: 1 } });
-        Promise.resolve(true);
+        incOptions.times_answered_correctly = 1;
     }
-    else {
-        await Question.findByIdAndUpdate(questionId, { $inc: { times_answered: 1 } });
-        Promise.resolve(true);
-    }
+    await Question.findByIdAndUpdate(questionId, { $inc: incOptions });
+    Promise.resolve(true);
 };
 
 exports.stats = async (req, h) => {

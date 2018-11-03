@@ -713,10 +713,7 @@ experiment('Question Route Test: ', () => {
             const { _id: categoryId } = await Category({ title: 'Historia' }).save();
             options = {
                 method: 'POST',
-                url: '/questions/suggestions',
-                credentials: {
-                    scope: ['create:suggestions']
-                },
+                url: '/questions',
                 payload: { ...mockQuestion, category: categoryId.toString() }
             };
         });
@@ -740,7 +737,7 @@ experiment('Question Route Test: ', () => {
         });
 
         test('fails when options array is more than 4', async () => {
-            options.payload.options = options.payload.options.push({title: 'hola mundo', correct_answer: false});
+            options.payload.options = options.payload.options.concat({title: 'hola mundo', correct_answer: false});
             const {statusCode} = await server.inject(options);
             expect(statusCode).to.equal(400);
         });
@@ -811,10 +808,10 @@ experiment('Question Route Test: ', () => {
             expect(statusCode).to.equal(400);
         });
 
-        test('tags array cannot be empty', async () => {
+        test('tags array can be empty', async () => {
             options.payload.tags = [];
             const {statusCode} = await server.inject(options);
-            expect(statusCode).to.equal(400);
+            expect(statusCode).to.equal(201);
         });
 
         test('fails when a tag is not 4 characters long or more', async () => {
