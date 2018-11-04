@@ -176,6 +176,24 @@ module.exports = {
             }
         });
 
+        //  GET /suggestions/count
+        server.route({
+            method: 'GET',
+            path: '/suggestions/count',
+            handler: Question.suggestionCount,
+            options: {
+                auth: {
+                    access: {
+                        scope: ['read:suggestions']
+                    }
+                },
+                validate: {
+                    payload: false,
+                    query: false
+                }
+            }
+        });
+
         //  GET /newgame/{difficulty}
         server.route({
             method: 'GET',

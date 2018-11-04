@@ -238,3 +238,15 @@ exports.stats = async (req, h) => {
 
     return stats;
 };
+
+exports.suggestionCount = async (req, h) => {
+    let count;
+
+    try {
+        count = await Question.countDocuments({state: 'pending'});
+    } catch (error) {
+        return Boom.internal();
+    }
+
+    return { count };
+};
