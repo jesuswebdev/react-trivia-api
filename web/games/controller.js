@@ -112,7 +112,7 @@ exports.update = async (req, h) => {
 exports.remove = async (req, h) => {
 };
 
-exports.stats = async (req, h) => {
+exports.top = async (req, h) => {
     //fuck this
     let stats = {
         easy: { fast: [], normal: [], extended: [] },

@@ -84,7 +84,7 @@ module.exports = {
         server.route({
             method: 'GET',
             path: '/top',
-            handler: Game.stats,
+            handler: Game.top,
             options: {
                 description: 'Obtener tablas de posiciones del Top 10',
                 notes: 'Obtener las tablas de posiciones del Top 10 para todas las dificultades y modos de juego',
