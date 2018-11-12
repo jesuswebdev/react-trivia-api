@@ -51,7 +51,7 @@ exports.create = async (req, h) => {
 exports.find = async (req, h) => {
     let foundQuestions = null;
     let totalResults = null;
-    let query = {};
+    let query = { state: 'approved' };
     let limit = 0;
     let skip = 0;
 
