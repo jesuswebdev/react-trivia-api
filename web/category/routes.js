@@ -1,10 +1,9 @@
 const Category = require('./controller');
-const Joi = require('joi');
+const Joi = require('@hapi/joi');
 
 module.exports = {
     name: 'category-routes',
     register: async (server, options) => {
-
         //  POST  /
         server.route({
             method: 'POST',
@@ -18,7 +17,10 @@ module.exports = {
                 },
                 validate: {
                     payload: Joi.object({
-                        title: Joi.string().trim().min(4).required()
+                        title: Joi.string()
+                            .trim()
+                            .min(4)
+                            .required()
                     }),
                     query: false
                 }
@@ -59,12 +61,16 @@ module.exports = {
                     payload: false,
                     query: false,
                     params: {
-                        id: Joi.string().alphanum().trim().length(24).required()
+                        id: Joi.string()
+                            .alphanum()
+                            .trim()
+                            .length(24)
+                            .required()
                     }
                 }
             }
         });
-        
+
         //  PUT /{id}
         server.route({
             method: 'PUT',
@@ -78,7 +84,10 @@ module.exports = {
                 },
                 validate: {
                     payload: Joi.object({
-                        title: Joi.string().trim().min(4).required()
+                        title: Joi.string()
+                            .trim()
+                            .min(4)
+                            .required()
                     }),
                     query: false
                 }
@@ -102,7 +111,10 @@ module.exports = {
                 validate: {
                     payload: false,
                     params: Joi.object({
-                        id: Joi.string().trim().min(4).required()
+                        id: Joi.string()
+                            .trim()
+                            .min(4)
+                            .required()
                     }),
                     query: false
                 }

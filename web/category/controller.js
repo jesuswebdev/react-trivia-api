@@ -1,6 +1,6 @@
 'use strict';
 
-const Boom = require('boom');
+const Boom = require('@hapi/boom');
 const Category = require('./model');
 const Question = require('../questions/model');
 

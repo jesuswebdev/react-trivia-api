@@ -1,14 +1,13 @@
 'use strict';
 
-const Boom = require('boom');
-const Iron = require('iron');
+const Boom = require('@hapi/boom');
+const Iron = require('@hapi/iron');
 const User = require('./model');
 const Profile = require('mongoose').model('Profile');
-const {iron, db} = require('../../config/config');
+const { iron, db } = require('../../config/config');
 
 exports.create = async (req, h) => {
-
-    let foundUser = await User.findOne({email: req.payload.email});
+    let foundUser = await User.findOne({ email: req.payload.email });
     if (foundUser) {
         return Boom.conflict('Correo electronico en uso');
     }
@@ -19,7 +18,7 @@ exports.create = async (req, h) => {
     } catch (err) {
         return Boom.internal();
     }
-    
+
     return h.response(createdUser).code(201);
 };
 
@@ -27,24 +26,27 @@ exports.find = async (req, h) => {
     let foundUser = null;
     try {
         foundUser = await User.find({}, { password: false });
-    }
-    catch (err) {
+    } catch (err) {
         return Boom.internal();
     }
-    
+
     return { users: foundUser, user_count: foundUser.length };
 };
 
 exports.findById = async (req, h) => {
-
     let foundUser = null;
-    
-    if (req.auth.credentials.role !== 'administrador' && req.auth.credentials.id !== req.params.id) {
+
+    if (
+        req.auth.credentials.role !== 'administrador' &&
+        req.auth.credentials.id !== req.params.id
+    ) {
         return Boom.forbidden();
     }
 
     try {
-        foundUser = await User.findById(req.params.id, { password: false }).populate('account_type', 'title');
+        foundUser = await User.findById(req.params.id, {
+            password: false
+        }).populate('account_type', 'title');
         if (!foundUser) {
             return Boom.notFound('El usuario no existe');
         }
@@ -58,10 +60,13 @@ exports.findById = async (req, h) => {
 exports.update = async (req, h) => {
     let updatedUser = null;
 
-    if (req.auth.credentials.id !== req.params.id && req.auth.credentials.role !== 'administrador') {
+    if (
+        req.auth.credentials.id !== req.params.id &&
+        req.auth.credentials.role !== 'administrador'
+    ) {
         return Boom.forbidden();
     }
-    
+
     try {
         if (req.payload.email) {
             const { _id } = await User.findOne({ email: req.payload.email });
@@ -70,7 +75,11 @@ exports.update = async (req, h) => {
             }
         }
 
-        updatedUser = await User.findOneAndUpdate({ _id: req.params.id }, { $set: { ...req.payload } }, { new: true, select: { password: false } });
+        updatedUser = await User.findOneAndUpdate(
+            { _id: req.params.id },
+            { $set: { ...req.payload } },
+            { new: true, select: { password: false } }
+        );
         if (!updatedUser) {
             return Boom.notFound();
         }
@@ -104,13 +113,22 @@ exports.login = async (req, h) => {
     let foundUser = null;
 
     try {
-        foundUser = await User.findOne({email: req.payload.email}).populate('account_type');
+        foundUser = await User.findOne({ email: req.payload.email }).populate(
+            'account_type'
+        );
         if (!foundUser) {
-            return Boom.badData('Combinacion de correo electrónico/contraseña incorrectos');
+            return Boom.badData(
+                'Combinacion de correo electrónico/contraseña incorrectos'
+            );
         }
-        let same = await foundUser.validatePassword(req.payload.password, foundUser.password);
+        let same = await foundUser.validatePassword(
+            req.payload.password,
+            foundUser.password
+        );
         if (!same) {
-            return Boom.badData('Combinacion de correo electrónico/contraseña incorrectos');
+            return Boom.badData(
+                'Combinacion de correo electrónico/contraseña incorrectos'
+            );
         }
     } catch (err) {
         return Boom.internal();
@@ -128,21 +146,27 @@ exports.login = async (req, h) => {
         email: foundUser.email
     };
 
-    return {user: foundUser, token};
+    return { user: foundUser, token };
 };
 
 exports.adminLogin = async (req, h) => {
     let foundUser = null;
 
     try {
-        foundUser = await User.findOne({email: req.payload.email}).populate('account_type', 'role');
+        foundUser = await User.findOne({ email: req.payload.email }).populate(
+            'account_type',
+            'role'
+        );
         if (!foundUser) {
             return Boom.badData('Combinacion de email/contraseña incorrectos');
         }
         if (foundUser.account_type.role !== 'administrador') {
             return Boom.notFound('El usuario no existe');
         }
-        let same = await foundUser.validatePassword(req.payload.password, foundUser.password);
+        let same = await foundUser.validatePassword(
+            req.payload.password,
+            foundUser.password
+        );
         if (!same) {
             return Boom.badData('Combinacion de email/contraseña incorrectos');
         }
@@ -159,15 +183,14 @@ exports.adminLogin = async (req, h) => {
     foundUser = {
         id: foundUser._id,
         name: foundUser.name,
-        email: foundUser.email,
+        email: foundUser.email
     };
 
-    return {user: foundUser, token};
+    return { user: foundUser, token };
 };
 
 exports.register = async (req, h) => {
-
-    let foundUser = await User.findOne({email: req.payload.email});
+    let foundUser = await User.findOne({ email: req.payload.email });
     if (foundUser) {
         return Boom.conflict('El correo electrónico ya esta en uso');
     }
@@ -183,5 +206,22 @@ exports.register = async (req, h) => {
         return Boom.internal();
     }
 
-    return h.response({ user: createdUser._id.toString(), name: createdUser.name }).code(201);
+    return h
+        .response({ user: createdUser._id.toString(), name: createdUser.name })
+        .code(201);
+};
+
+exports.getAccessToken = async (req, h) => {
+    let token = await Iron.seal(
+        {
+            id: db.guest_id,
+            guest: true,
+            iat: new Date().getTime(),
+            ttl: 1000 * 60 * 60 * 24
+        },
+        iron.password,
+        Iron.defaults
+    );
+
+    return { token };
 };

@@ -1,16 +1,16 @@
 'use strict';
 
 const Profile = require('./model');
-const Boom = require('boom');
+const Boom = require('@hapi/boom');
 
 exports.create = async (req, h) => {
     let createdProfile = null;
 
     try {
-        let foundProfile = await Profile.findOne({title: req.payload.title});
+        let foundProfile = await Profile.findOne({ title: req.payload.title });
         if (foundProfile) {
             return Boom.conflict('Ya existe un perfil con ese nombre');
-        }      
+        }
 
         createdProfile = await Profile({
             ...req.payload,
@@ -35,7 +35,6 @@ exports.find = async (req, h) => {
 };
 
 exports.findById = async (req, h) => {
-    
     let foundProfile = null;
 
     try {
@@ -51,10 +50,13 @@ exports.findById = async (req, h) => {
 };
 
 exports.update = async (req, h) => {
-
     let updatedProfile = null;
     try {
-        updatedProfile = await Profile.findOneAndUpdate({_id: req.params.id}, { $set: { ...req.payload }}, {new: true});
+        updatedProfile = await Profile.findOneAndUpdate(
+            { _id: req.params.id },
+            { $set: { ...req.payload } },
+            { new: true }
+        );
         if (!updatedProfile) {
             return Boom.notFound();
         }

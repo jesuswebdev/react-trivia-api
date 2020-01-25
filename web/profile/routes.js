@@ -1,5 +1,5 @@
 const Profile = require('./controller');
-const Joi = require('joi');
+const Joi = require('@hapi/joi');
 
 module.exports = {
     name: 'profile-routes',

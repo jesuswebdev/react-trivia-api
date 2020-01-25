@@ -1,7 +1,7 @@
 'use strict';
 
-const Boom = require('boom');
-const Iron = require('iron');
+const Boom = require('@hapi/boom');
+const Iron = require('@hapi/iron');
 const Category = require('mongoose').model('Category');
 const Question = require('mongoose').model('Question');
 const Game = require('mongoose').model('Game');
