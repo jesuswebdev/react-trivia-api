@@ -6,27 +6,32 @@ const Category = require('mongoose').model('Category');
 const Question = require('mongoose').model('Question');
 const Game = require('mongoose').model('Game');
 const { randomizeArray } = require('../../utils');
-const { iron: { password: IronPassword } } = require('../../config/config');
-const { 
-    incrementQuestionCount,
+const {
+    iron: { password: IronPassword }
+} = require('../../config/config');
+const {
+    setQuestionCount,
     decrementQuestionCount
 } = require('../category/controller');
+const questionsJSON = require('../../utils/trivia-questions.json');
 
 exports.create = async (req, h) => {
-
-    let correctAnswers = req.payload.options.reduce((p, c) => c.correct_answer ? p + 1 : p, 0);
+    let correctAnswers = req.payload.options.reduce(
+        (p, c) => (c.correct ? p + 1 : p),
+        0
+    );
     if (correctAnswers > 1) {
         return Boom.badRequest('Solo puede haber una respuesta correcta');
     }
     if (correctAnswers === 0) {
         return Boom.badRequest('Debe existir una respuesta correcta');
     }
-    
+
     let category = await Category.findById(req.payload.category);
     if (!category) {
         return Boom.badRequest('La categoria especificada no existe');
     }
-    
+
     let createdQuestion = null;
 
     req.payload.options = req.payload.options.map((option, index) => {
@@ -36,11 +41,11 @@ exports.create = async (req, h) => {
         };
     });
 
-    let state = req.auth.credentials ? 'approved' : 'pending';
+    let state = req.auth.credentials.role === 'admin' ? 'approved' : 'pending';
 
     try {
         createdQuestion = await Question({ ...req.payload, state }).save();
-        await incrementQuestionCount(req.payload.category, req.payload.difficulty);
+        await setQuestionCount(req.payload.category);
     } catch (error) {
         return Boom.internal();
     }
@@ -72,7 +77,10 @@ exports.find = async (req, h) => {
     }
 
     try {
-        foundQuestions = await Question.find(query).skip(skip).limit(limit).populate('category', 'title');
+        foundQuestions = await Question.find(query)
+            .skip(skip)
+            .limit(limit)
+            .populate('category', 'title');
         totalResults = await Question.countDocuments(query);
     } catch (error) {
         return Boom.internal();
@@ -85,7 +93,10 @@ exports.findById = async (req, h) => {
     let foundQuestion = null;
 
     try {
-        foundQuestion = await Question.findById(req.params.id).populate('category', 'title');
+        foundQuestion = await Question.findById(req.params.id).populate(
+            'category',
+            'title'
+        );
         if (!foundQuestion) {
             return Boom.notFound('No se encontró el recurso');
         }
@@ -97,10 +108,12 @@ exports.findById = async (req, h) => {
 };
 
 exports.update = async (req, h) => {
-
     let updatedQuestion = null;
     if (req.payload.options) {
-        let correctAnswers = req.payload.options.reduce((p, c) => c.correct_answer ? p + 1 : p, 0);
+        let correctAnswers = req.payload.options.reduce(
+            (p, c) => (c.correct_answer ? p + 1 : p),
+            0
+        );
         if (correctAnswers > 1) {
             return Boom.badRequest('Solo puede haber una respuesta correcta');
         }
@@ -117,7 +130,11 @@ exports.update = async (req, h) => {
     }
 
     try {
-        updatedQuestion = await Question.findByIdAndUpdate(req.params.id, { $set: { ...req.payload }}, { new: true });
+        updatedQuestion = await Question.findByIdAndUpdate(
+            req.params.id,
+            { $set: { ...req.payload } },
+            { new: true }
+        );
         if (!updatedQuestion) {
             return Boom.notFound('No se encontro el recurso');
         }
@@ -144,12 +161,15 @@ exports.remove = async (req, h) => {
 };
 
 exports.changeSuggestionStatus = async (req, h) => {
-
     let question;
-    let setOption = { state: req.params.status === 'approve' ? 'approved' : 'rejected' };
+    let setOption = {
+        state: req.params.status === 'approve' ? 'approved' : 'rejected'
+    };
 
     try {
-        question = await Question.findByIdAndUpdate(req.params.id, { $set: setOption });
+        question = await Question.findByIdAndUpdate(req.params.id, {
+            $set: setOption
+        });
         if (!question) {
             return Boom.notFound('El recurso no existe');
         }
@@ -161,15 +181,22 @@ exports.changeSuggestionStatus = async (req, h) => {
 };
 
 exports.newgame = async (req, h) => {
-
     let foundQuestions = null;
     const difficulty = req.params.difficulty;
     const question_count = req.query.question_count;
 
     try {
-        foundQuestions = await Question.find({ $and: [{ difficulty }, { state: 'approved' }] }, 
-            { title: true, options: true, difficulty: true, category: true, did_you_know: true, link: true })
-            .populate('category', 'title');
+        foundQuestions = await Question.find(
+            { $and: [{ difficulty }, { state: 'approved' }] },
+            {
+                title: true,
+                options: true,
+                difficulty: true,
+                category: true,
+                did_you_know: true,
+                link: true
+            }
+        ).populate('category', 'title');
         if (foundQuestions.length === 0) {
             return Boom.notFound('No hay preguntas registradas');
         }
@@ -179,7 +206,9 @@ exports.newgame = async (req, h) => {
 
     foundQuestions = randomizeArray(foundQuestions, question_count);
 
-    let questionIdArray = foundQuestions.map(q => { return { question: q._id.toString() };});
+    let questionIdArray = foundQuestions.map(q => {
+        return { question: q._id.toString() };
+    });
 
     let newgame;
 
@@ -193,7 +222,7 @@ exports.newgame = async (req, h) => {
     } catch (error) {
         return Boom.internal();
     }
-    
+
     let sealObject = {
         game_id: newgame._id.toString()
     };
@@ -209,16 +238,28 @@ exports.newgame = async (req, h) => {
     return { questions: foundQuestions, game_token: token };
 };
 
-exports.incrementQuestionAnswered = async (questionId, selectedOption) => {
-
-    const { options } = await Question.findById(questionId);
-    let correct = options.find(option => option.option_id === selectedOption).correct_answer;
-    let incOptions = { times_answered: 1 };
-    if (correct) {
-        incOptions.times_answered_correctly = 1;
-    }
-    await Question.findByIdAndUpdate(questionId, { $inc: incOptions });
-    Promise.resolve(true);
+exports.incrementQuestionAnswered = (questionId, correct) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            await Question.findByIdAndUpdate(questionId, {
+                $inc: {
+                    times_answered: 1,
+                    times_answered_correctly: correct ? 1 : 0
+                }
+            });
+            resolve();
+        } catch (error) {
+            reject(error);
+        }
+    });
+    // const { options } = await Question.findById(questionId);
+    // let correct = options.find(option => option.option_id === selectedOption)
+    //     .correct_answer;
+    // let incOptions = { times_answered: 1 };
+    // if (correct) {
+    //     incOptions.times_answered_correctly = 1;
+    // }
+    // return Question.findByIdAndUpdate(questionId, { $inc: incOptions });
 };
 
 exports.stats = async (req, h) => {
@@ -230,11 +271,24 @@ exports.stats = async (req, h) => {
         questions_waiting_approval: 0
     };
 
-    stats.total_questions = await Question.countDocuments({state: 'approved'});
-    stats.total_easy_questions = await Question.countDocuments({difficulty: 'easy', state: 'approved'});
-    stats.total_medium_questions = await Question.countDocuments({difficulty: 'medium', state: 'approved'});
-    stats.total_hard_questions = await Question.countDocuments({difficulty: 'hard', state: 'approved'});
-    stats.questions_waiting_approval = await Question.countDocuments({state: 'pending'});
+    stats.total_questions = await Question.countDocuments({
+        state: 'approved'
+    });
+    stats.total_easy_questions = await Question.countDocuments({
+        difficulty: 'easy',
+        state: 'approved'
+    });
+    stats.total_medium_questions = await Question.countDocuments({
+        difficulty: 'medium',
+        state: 'approved'
+    });
+    stats.total_hard_questions = await Question.countDocuments({
+        difficulty: 'hard',
+        state: 'approved'
+    });
+    stats.questions_waiting_approval = await Question.countDocuments({
+        state: 'pending'
+    });
 
     return stats;
 };
@@ -243,10 +297,67 @@ exports.suggestionCount = async (req, h) => {
     let count;
 
     try {
-        count = await Question.countDocuments({state: 'pending'});
+        count = await Question.countDocuments({ state: 'pending' });
     } catch (error) {
         return Boom.internal();
     }
 
     return { count };
+};
+
+exports.seed = async (req, h) => {
+    try {
+        const questions = questionsJSON.map(
+            ({
+                tags,
+                did_you_know,
+                state,
+                link,
+                title,
+                options,
+                category
+            }) => ({
+                tags,
+                did_you_know,
+                state,
+                link,
+                title,
+                options,
+                category: category.$oid
+            })
+        );
+        await Question.insertMany(questions);
+        return h.response();
+    } catch (error) {
+        console.log(error);
+        return Boom.internal();
+    }
+};
+
+/**
+ * @param {[String]} exclude array of excluded questions ids
+ * @returns {Promise<Question>}  question the question
+ */
+exports.getRandomQuestion = exclude => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const [question] = await Question.aggregate([
+                ...(exclude ? [{ $match: { _id: { $nin: exclude } } }] : []),
+                { $sample: { size: 1 } },
+                {
+                    $lookup: {
+                        from: 'categories',
+                        localField: 'category',
+                        foreignField: '_id',
+                        as: 'category'
+                    }
+                },
+                { $unwind: '$category' }
+            ]);
+            return resolve(question);
+        } catch (error) {
+            console.log(error);
+            return reject(error);
+        }
+    });
 };

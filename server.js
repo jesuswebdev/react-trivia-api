@@ -14,6 +14,8 @@ const server = Hapi.server({
     }
 });
 
+server.validator(require('@hapi/joi'));
+
 const init = async () => {
     await configureMongoose();
 
@@ -53,24 +55,24 @@ const init = async () => {
         //         prefix: '/profiles'
         //     }
         // },
-        // {
-        //     plugin: require('./web/category/routes'),
-        //     routes: {
-        //         prefix: '/category'
-        //     }
-        // },
-        // {
-        //     plugin: require('./web/questions/routes'),
-        //     routes: {
-        //         prefix: '/questions'
-        //     }
-        // },
-        // {
-        //     plugin: require('./web/games/routes'),
-        //     routes: {
-        //         prefix: '/games'
-        //     }
-        // }
+        {
+            plugin: require('./web/category/routes'),
+            routes: {
+                prefix: '/category'
+            }
+        },
+        {
+            plugin: require('./web/questions/routes'),
+            routes: {
+                prefix: '/questions'
+            }
+        },
+        {
+            plugin: require('./web/games/routes'),
+            routes: {
+                prefix: '/games'
+            }
+        }
     ]);
 
     // server.route({
