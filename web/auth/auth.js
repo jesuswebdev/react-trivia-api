@@ -37,6 +37,9 @@ module.exports = {
                     } catch (error) {
                         return Boom.badRequest('Token no válido');
                     }
+                    if (new Date().getTime() > payload.iat + payload.ttl) {
+                        return Boom.unauthorized('El token expiró');
+                    }
 
                     let credentials = null;
 
@@ -47,7 +50,12 @@ module.exports = {
                         let guestPermissions = [];
 
                         if (guest) {
-                            guestPermissions = ['create:game'];
+                            guestPermissions = [
+                                'create:game',
+                                'create:game/answer',
+                                'read:game/top',
+                                'create:question'
+                            ];
                         } else {
                             foundUser = await User.findById(
                                 payload.id
