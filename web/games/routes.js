@@ -57,11 +57,37 @@ module.exports = {
                             duration: Joi.number()
                                 .integer()
                                 .min(0)
-                                .max(30),
+                                .max(30000),
+                            timed_out: Joi.boolean(),
                             answered_at: Joi.number()
                         })
                     }).options({ stripUnknown: true }),
                     query: false,
+                    params: {
+                        gameId: Joi.string()
+                            .trim()
+                            .alphanum()
+                            .length(24)
+                    }
+                }
+            }
+        });
+
+        server.route({
+            method: 'GET',
+            path: '/{gameId}/next-question',
+            handler: Game.nextQuestion,
+            options: {
+                auth: {
+                    access: {
+                        scope: ['read:game/next-question']
+                    }
+                },
+                validate: {
+                    payload: false,
+                    query: {
+                        token: Joi.string().trim()
+                    },
                     params: {
                         gameId: Joi.string()
                             .trim()

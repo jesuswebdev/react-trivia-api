@@ -7,7 +7,7 @@ module.exports = {
         //  GET /
         server.route({
             method: 'GET',
-            path: '/get-access-token',
+            path: '/token/{admin?}',
             handler: User.getAccessToken,
             options: {
                 auth: false,
@@ -142,9 +142,18 @@ module.exports = {
                 auth: false,
                 validate: {
                     payload: Joi.object({
-                        name: Joi.string().min(6).trim().required(),
-                        email: Joi.string().email().trim().required(),
-                        password: Joi.string().min(6).trim().required()
+                        name: Joi.string()
+                            .min(6)
+                            .trim()
+                            .required(),
+                        email: Joi.string()
+                            .email()
+                            .trim()
+                            .required(),
+                        password: Joi.string()
+                            .min(6)
+                            .trim()
+                            .required()
                     }),
                     query: false
                 }
@@ -160,8 +169,14 @@ module.exports = {
                 auth: false,
                 validate: {
                     payload: Joi.object({
-                        email: Joi.string().email().trim().required(),
-                        password: Joi.string().min(6).trim().required()
+                        email: Joi.string()
+                            .email()
+                            .trim()
+                            .required(),
+                        password: Joi.string()
+                            .min(6)
+                            .trim()
+                            .required()
                     }),
                     query: false
                 }
@@ -177,8 +192,14 @@ module.exports = {
                 auth: false,
                 validate: {
                     payload: Joi.object({
-                        email: Joi.string().email().trim().required(),
-                        password: Joi.string().min(6).trim().required()
+                        email: Joi.string()
+                            .email()
+                            .trim()
+                            .required(),
+                        password: Joi.string()
+                            .min(6)
+                            .trim()
+                            .required()
                     }),
                     query: false
                 }

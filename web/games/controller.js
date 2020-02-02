@@ -11,6 +11,7 @@ const {
 const {
     iron: { password: ironPassword }
 } = require('../../config/config');
+const { shuffleArray } = require('../../utils');
 
 exports.create = async (req, h) => {
     let gameToken = null;
@@ -134,7 +135,7 @@ exports.find = async (req, h) => {
 
 exports.findById = async (req, h) => {
     let foundGame = null;
-
+    const isGuest = req.auth.credentials.role === 'guest';
     try {
         foundGame = await Game.findById(req.params.id).populate(
             'questions.question'
@@ -146,7 +147,29 @@ exports.findById = async (req, h) => {
         return Boom.internal();
     }
 
-    return foundGame;
+    if (isGuest) {
+        foundGame = foundGame.toJSON();
+        const game = {
+            user: foundGame.user,
+            duration: foundGame.duration,
+            total_correct_answers: foundGame.total_correct_answers,
+            created_at: foundGame.createdAt,
+            questions: foundGame.questions.map(question => {
+                return {
+                    title: question.question.title,
+                    answered: question.answered,
+                    timed_out: question.timed_out,
+                    duration: question.duration,
+                    answered_at: question.answered_at,
+                    answered_correctly: question.question.options.find(opt => {
+                        return opt.option_id === question.selected_option;
+                    }).correct
+                };
+            })
+        };
+        return h.response(game);
+    }
+    return h.response(foundGame);
 };
 
 exports.update = async (req, h) => {};
@@ -155,11 +178,12 @@ exports.remove = async (req, h) => {};
 
 exports.top = async (req, h) => {
     try {
-        const stats = await Game.find(
+        const games = await Game.find(
             {
                 $and: [
                     { active: false },
                     { duration: { $gt: 0 } },
+                    { total_correct_answers: { $gt: 0 } },
                     { current_question: { $eq: null } }
                 ]
             },
@@ -172,6 +196,12 @@ exports.top = async (req, h) => {
         )
             .sort({ total_correct_answers: -1, duration: 1 })
             .limit(100);
+
+        const stats = games.map((game, index) => ({
+            ...game.toJSON(),
+            position: index + 1
+        }));
+
         return h.response(stats);
     } catch (error) {
         return Boom.internal();
@@ -181,21 +211,11 @@ exports.top = async (req, h) => {
 exports.new = async (req, h) => {
     const user = req.payload.name;
     try {
-        const question = await getRandomQuestion();
-        const game = await Game.create({
-            user,
-            current_question: question._id
-        });
+        const game = await Game.create({ user });
         let token = await Iron.seal(
             {
                 iat: new Date().getTime(),
                 id: game.id,
-                current_question: {
-                    id: question._id,
-                    correct_answer_id: question.options.find(
-                        ({ correct }) => correct
-                    ).option_id
-                },
                 answered_questions: []
             },
             ironPassword,
@@ -205,21 +225,7 @@ exports.new = async (req, h) => {
         return h
             .response({
                 token,
-                question: {
-                    id: question._id,
-                    title: question.title,
-                    options: question.options.map(({ text, option_id }) => ({
-                        text,
-                        option_id
-                    })),
-                    category: question.category.name,
-                    did_you_know: question.did_you_know,
-                    link: question.link
-                },
-                game: {
-                    id: game.id,
-                    remaining_attempts: game.remaining_attempts
-                }
+                game: { id: game.id }
             })
             .code(201);
     } catch (error) {
@@ -269,13 +275,7 @@ exports.answer = async (req, h) => {
                 question: req.payload.question.id
             })
         };
-        let newQuestion = null;
-        if (updatedGame.active) {
-            newQuestion = await getRandomQuestion(
-                token.answered_questions.concat(token.current_question.id)
-            );
-        }
-        // update old question
+        // update question
         await incrementQuestionAnswered(
             req.payload.question.id,
             answerIsCorrect
@@ -284,56 +284,107 @@ exports.answer = async (req, h) => {
         await Game.findByIdAndUpdate(token.id, {
             $set: {
                 ...updatedGame,
-                current_question: newQuestion ? newQuestion._id : null
+                current_question: null
             }
         });
         //create token
-        let newToken = null;
-        if (updatedGame.active && !!newQuestion) {
-            newToken = await Iron.seal(
-                {
-                    iat: new Date().getTime(),
-                    id: game.id,
-                    current_question: {
-                        id: newQuestion._id,
-                        correct_answer_id: newQuestion.options.find(
-                            ({ correct }) => correct
-                        ).option_id
-                    },
-                    answered_questions: token.answered_questions.concat(
-                        token.current_question.id
-                    )
-                },
-                ironPassword,
-                Iron.defaults
-            );
+        let newToken = await Iron.seal(
+            {
+                iat: new Date().getTime(),
+                id: game.id,
+                answered_questions: token.answered_questions.concat(
+                    token.current_question.id
+                )
+            },
+            ironPassword,
+            Iron.defaults
+        );
+
+        return h.response({
+            token: newToken,
+            game: {
+                id: game.id,
+                remaining_attempts: updatedGame.remaining_attempts,
+                total_answered_questions: token.answered_questions.length + 1,
+                duration: updatedGame.duration,
+                total_correct_answers: updatedGame.total_correct_answers
+            },
+            answer: {
+                result: answerIsCorrect,
+                correct_option_id: token.current_question.correct_answer_id,
+                user_selected_option_id: req.payload.question.selected_option
+            }
+        });
+    } catch (error) {
+        console.log(error);
+        return Boom.internal();
+    }
+};
+
+exports.nextQuestion = async (req, h) => {
+    try {
+        let token = await Iron.unseal(
+            req.query.token,
+            ironPassword,
+            Iron.defaults
+        );
+        if (req.params.gameId !== token.id) {
+            return Boom.badData("Game IDs don't match");
         }
 
-        // no token sent when game ends
+        const game = await Game.findById(req.params.gameId);
+
+        if (!game.active) {
+            return Boom.badData('The game is not active');
+        }
+        if (!!game.current_question) {
+            return Boom.badData('Game has a current question');
+        }
+        // TODO date validation
+        let newQuestion = await getRandomQuestion(token.answered_questions);
+
+        // update game
+        await Game.findByIdAndUpdate(token.id, {
+            $set: { current_question: newQuestion._id }
+        });
+        //create token
+        let newToken = await Iron.seal(
+            {
+                iat: new Date().getTime(),
+                id: game.id,
+                current_question: {
+                    id: newQuestion._id,
+                    correct_answer_id: newQuestion.options.find(
+                        ({ correct }) => correct
+                    ).option_id
+                },
+                answered_questions: token.answered_questions
+            },
+            ironPassword,
+            Iron.defaults
+        );
+
         return h.response({
-            ...(updatedGame.active
-                ? {
-                      token: newToken,
-                      question: {
-                          id: newQuestion._id,
-                          title: newQuestion.title,
-                          options: newQuestion.options.map(
-                              ({ text, option_id }) => ({
-                                  text,
-                                  option_id
-                              })
-                          ),
-                          category: newQuestion.category.name,
-                          did_you_know: newQuestion.did_you_know,
-                          link: newQuestion.link
-                      },
-                      game: {
-                          id: game.id,
-                          remaining_attempts: updatedGame.remaining_attempts
-                      }
-                  }
-                : {}),
-            answer_result: answerIsCorrect
+            token: newToken,
+            question: {
+                number: (token.answered_questions || []).length + 1,
+                id: newQuestion._id,
+                title: newQuestion.title,
+                options: shuffleArray(newQuestion.options).map(
+                    ({ text, option_id }) => ({
+                        text,
+                        option_id
+                    })
+                ),
+                category: newQuestion.category.name,
+                did_you_know: newQuestion.did_you_know,
+                link: newQuestion.link
+            },
+            game: {
+                id: game.id,
+                remaining_attempts: game.remaining_attempts,
+                total_answered_questions: token.answered_questions.length
+            }
         });
     } catch (error) {
         console.log(error);

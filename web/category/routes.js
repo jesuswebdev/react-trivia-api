@@ -47,24 +47,23 @@ module.exports = {
             }
         });
 
-        // //  GET /
-        // server.route({
-        //     method: 'GET',
-        //     path: '/',
-        //     handler: Category.find,
-        //     options: {
-        //         auth: {
-        //             access: {
-        //                 scope: ['read:category']
-        //             },
-        //             mode: 'optional'
-        //         },
-        //         validate: {
-        //             payload: false,
-        //             query: false
-        //         }
-        //     }
-        // });
+        //  GET /
+        server.route({
+            method: 'GET',
+            path: '/',
+            handler: Category.find,
+            options: {
+                auth: {
+                    access: {
+                        scope: ['read:category']
+                    }
+                },
+                validate: {
+                    payload: false,
+                    query: false
+                }
+            }
+        });
 
         // //  GET /{id}
         // server.route({

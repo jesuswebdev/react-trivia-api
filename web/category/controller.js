@@ -27,8 +27,8 @@ exports.find = async (req, h) => {
     let foundCategories = null;
     let projection = {};
 
-    if (!req.auth.credentials) {
-        projection = { title: true };
+    if (!req.auth.credentials || req.auth.credentials.role === 'guest') {
+        projection = { name: true };
     }
 
     try {

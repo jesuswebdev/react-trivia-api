@@ -14,7 +14,6 @@ module.exports = {
                     let token = null;
                     let payload = null;
                     let auth = req.raw.req.headers.authorization || null;
-                    console.log('auth', auth);
                     if (!auth) {
                         return h.unauthenticated();
                     }
@@ -37,9 +36,9 @@ module.exports = {
                     } catch (error) {
                         return Boom.badRequest('Token no válido');
                     }
-                    if (new Date().getTime() > payload.iat + payload.ttl) {
-                        return Boom.unauthorized('El token expiró');
-                    }
+                    // if (new Date().getTime() > payload.iat + payload.ttl) {
+                    //     return Boom.unauthorized('El token expiró');
+                    // }
 
                     let credentials = null;
 
@@ -47,16 +46,8 @@ module.exports = {
                         let foundUser = null;
                         const guest = payload.guest;
                         let permissions = [];
-                        let guestPermissions = [];
 
-                        if (guest) {
-                            guestPermissions = [
-                                'create:game',
-                                'create:game/answer',
-                                'read:game/top',
-                                'create:question'
-                            ];
-                        } else {
+                        if (!guest) {
                             foundUser = await User.findById(
                                 payload.id
                             ).populate('account_type', 'permissions role');
@@ -72,7 +63,7 @@ module.exports = {
                             id: payload.id,
                             role: guest ? 'guest' : foundUser.account_type.role,
                             scope: guest
-                                ? guestPermissions
+                                ? payload.permissions
                                 : [
                                       ...permissions.create,
                                       ...permissions.read,

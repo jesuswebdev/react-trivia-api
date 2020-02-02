@@ -21,27 +21,6 @@ const init = async () => {
 
     await server.register(require('./web/auth/auth'));
 
-    // if (
-    //     process.env.NODE_ENV === 'development' ||
-    //     process.env.NODE_ENV === 'production'
-    // ) {
-    //     await server.register([
-    //         Inert,
-    //         Vision,
-    //         {
-    //             plugin: HapiSwagger,
-    //             info: {
-    //                 title: 'React Trivia API Documentation',
-    //                 version: pkg.version
-    //             },
-    //             options: {
-    //                 reuseDefinitions: false,
-    //                 definitionPrefix: 'useLabel'
-    //             }
-    //         }
-    //     ]);
-    // }
-
     await server.register([
         {
             plugin: require('./web/users/routes'),
@@ -75,35 +54,20 @@ const init = async () => {
         }
     ]);
 
-    // server.route({
-    //     method: 'GET',
-    //     path: '/health',
-    //     handler: (req, h) => {
-    //         return { ok: true };
-    //     },
-    //     options: {
-    //         auth: false,
-    //         validate: {
-    //             payload: false,
-    //             query: false
-    //         }
-    //     }
-    // });
-
-    // server.route({
-    //     method: 'GET',
-    //     path: '/',
-    //     handler: (req, h) => {
-    //         return h.redirect(`https://${req.info.host}/documentation`);
-    //     },
-    //     options: {
-    //         auth: false,
-    //         validate: {
-    //             payload: false,
-    //             query: false
-    //         }
-    //     }
-    // });
+    server.route({
+        method: 'GET',
+        path: '/health',
+        handler: (req, h) => {
+            return { ok: true };
+        },
+        options: {
+            auth: false,
+            validate: {
+                payload: false,
+                query: false
+            }
+        }
+    });
 
     await server.start();
     console.log(`Server running at: ${server.info.uri}`);

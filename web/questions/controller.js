@@ -5,7 +5,7 @@ const Iron = require('@hapi/iron');
 const Category = require('mongoose').model('Category');
 const Question = require('mongoose').model('Question');
 const Game = require('mongoose').model('Game');
-const { randomizeArray } = require('../../utils');
+const { randomizeArray, castToObjectId } = require('../../utils');
 const {
     iron: { password: IronPassword }
 } = require('../../config/config');
@@ -335,14 +335,17 @@ exports.seed = async (req, h) => {
 };
 
 /**
- * @param {[String]} exclude array of excluded questions ids
- * @returns {Promise<Question>}  question the question
+ * @param {String[]} exclude array of excluded questions ids
+ * @returns {Question}  the question
  */
 exports.getRandomQuestion = exclude => {
     return new Promise(async (resolve, reject) => {
         try {
             const [question] = await Question.aggregate([
-                ...(exclude ? [{ $match: { _id: { $nin: exclude } } }] : []),
+                ...(exclude
+                    ? [{ $match: { _id: { $nin: castToObjectId(exclude) } } }]
+                    : []),
+                { $match: { state: { $eq: 'approved' } } },
                 { $sample: { size: 1 } },
                 {
                     $lookup: {

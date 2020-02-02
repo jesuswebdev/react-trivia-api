@@ -212,12 +212,16 @@ exports.register = async (req, h) => {
 };
 
 exports.getAccessToken = async (req, h) => {
+    const adminToken = req.path.includes('/admin');
+    const [user] = await User.find({
+        name: adminToken ? 'React Trivia Admin Guest' : 'React Trivia Guest'
+    }).populate('account_type');
+
     let token = await Iron.seal(
         {
             id: db.guest_id,
             guest: true,
-            iat: new Date().getTime(),
-            ttl: 1000 * 60 * 60 * 24
+            permissions: user.account_type.permissions
         },
         iron.password,
         Iron.defaults
