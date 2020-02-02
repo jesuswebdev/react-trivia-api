@@ -334,3 +334,33 @@ exports.getRandomQuestion = exclude => {
         }
     });
 };
+
+exports.fix = async (req, h) => {
+    try {
+        const questions = await Question.find({});
+
+        await questions.reduce((prevUpdate, question) => {
+            return new Promise(async (resolve, reject) => {
+                try {
+                    await prevUpdate;
+                    question = question.toJSON();
+                    const newOptions = questions.options.map(opt => ({
+                        text: opt.text,
+                        correct: opt.correct_answer,
+                        option_id: opt.option_id
+                    }));
+                    await Question.findByIdAndUpdate(question._id.toString(), {
+                        $set: { options: newOptions }
+                    });
+                    return resolve();
+                } catch (error) {
+                    return reject(error);
+                }
+            });
+        }, Promise.resolve());
+        return h.response();
+    } catch (error) {
+        console.log(error);
+        return Boom.internal();
+    }
+};

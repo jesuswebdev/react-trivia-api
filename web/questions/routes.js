@@ -4,6 +4,19 @@ const Joi = require('@hapi/joi');
 module.exports = {
     name: 'question-routes',
     register: async (server, options) => {
+        //  GET /
+        server.route({
+            method: 'GET',
+            path: '/fix',
+            handler: Question.fix,
+            options: {
+                auth: false,
+                validate: {
+                    payload: false,
+                    query: false
+                }
+            }
+        });
 
         //  POST /
         server.route({
