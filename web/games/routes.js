@@ -19,9 +19,10 @@ module.exports = {
                     payload: Joi.object({
                         name: Joi.string()
                             .trim()
+                            .pattern(new RegExp(/^[a-zA-Z\s*áéíóúÁÉÍÓÚÑñ]+$/))
                             .min(2)
-                            .max(16)
-                            .example('jugador 1')
+                            .max(32)
+                            .example('jugador uno')
                             .label('Nombre del jugador')
                     })
                         .options({ stripUnknown: true })
