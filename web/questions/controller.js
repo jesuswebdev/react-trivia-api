@@ -13,7 +13,6 @@ const {
     setQuestionCount,
     decrementQuestionCount
 } = require('../category/controller');
-const questionsJSON = require('../../utils/trivia-questions.json');
 
 exports.create = async (req, h) => {
     let correctAnswers = req.payload.options.reduce(
@@ -303,35 +302,6 @@ exports.suggestionCount = async (req, h) => {
     }
 
     return { count };
-};
-
-exports.seed = async (req, h) => {
-    try {
-        const questions = questionsJSON.map(
-            ({
-                tags,
-                did_you_know,
-                state,
-                link,
-                title,
-                options,
-                category
-            }) => ({
-                tags,
-                did_you_know,
-                state,
-                link,
-                title,
-                options,
-                category: category.$oid
-            })
-        );
-        await Question.insertMany(questions);
-        return h.response();
-    } catch (error) {
-        console.log(error);
-        return Boom.internal();
-    }
 };
 
 /**

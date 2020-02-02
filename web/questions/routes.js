@@ -4,18 +4,6 @@ const Joi = require('@hapi/joi');
 module.exports = {
     name: 'question-routes',
     register: async (server, options) => {
-        server.route({
-            method: 'GET',
-            path: '/seed',
-            handler: Question.seed,
-            options: {
-                auth: false,
-                validate: {
-                    payload: false,
-                    query: false
-                }
-            }
-        });
 
         //  POST /
         server.route({
