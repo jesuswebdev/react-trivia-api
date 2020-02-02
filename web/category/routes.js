@@ -27,26 +27,6 @@ module.exports = {
             }
         });
 
-        //seed
-        server.route({
-            method: 'GET',
-            path: '/seed',
-            handler: Category.seed,
-            options: {
-                auth: false
-                //  {
-                //     access: {
-                //         scope: ['create:category']
-                //     }
-                // }
-                ,
-                validate: {
-                    payload: false,
-                    query: false
-                }
-            }
-        });
-
         //  GET /
         server.route({
             method: 'GET',

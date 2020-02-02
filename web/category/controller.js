@@ -3,7 +3,6 @@
 const Boom = require('@hapi/boom');
 const Category = require('./model');
 const Question = require('../questions/model');
-const categoriesJSON = require('../../utils/trivia-categories.json');
 
 exports.create = async (req, h) => {
     let createdCategory = null;
@@ -109,15 +108,4 @@ exports.decrementQuestionCount = async categoryId => {
     await Category.findByIdAndUpdate(categoryId, {
         $inc: { question_count: -1 }
     });
-};
-
-exports.seed = async (req, h) => {
-    try {
-        const categories = categoriesJSON.map(c => ({ name: c.title }));
-        Promise.all(categories.map(c => Category.create(c)));
-        return h.response();
-    } catch (error) {
-        console.log(error);
-        return Boom.internal();
-    }
 };
