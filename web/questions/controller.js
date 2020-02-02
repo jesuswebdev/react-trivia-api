@@ -344,7 +344,7 @@ exports.fix = async (req, h) => {
                 try {
                     await prevUpdate;
                     question = question.toJSON();
-                    const newOptions = questions.options.map(opt => ({
+                    const newOptions = question.options.map(opt => ({
                         text: opt.text,
                         correct: opt.correct_answer,
                         option_id: opt.option_id
