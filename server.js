@@ -2,12 +2,8 @@
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 
-const Hapi = require('hapi');
-const Inert = require('inert');
-const Vision = require('vision');
-const HapiSwagger = require('hapi-swagger');
+const Hapi = require('@hapi/hapi');
 const configureMongoose = require('./config/mongoose');
-const pkg = require('./package.json');
 
 const server = Hapi.server({
     port: process.env.PORT || 8080,
@@ -18,29 +14,12 @@ const server = Hapi.server({
     }
 });
 
-const init = async () => {
+server.validator(require('@hapi/joi'));
 
-    configureMongoose();
+const init = async () => {
+    await configureMongoose();
 
     await server.register(require('./web/auth/auth'));
-
-    if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'production') {
-        await server.register([
-            Inert,
-            Vision,
-            {
-                plugin: HapiSwagger,
-                info: {
-                    title: 'React Trivia API Documentation',
-                    version: pkg.version
-                },
-                options: {
-                    reuseDefinitions: false,
-                    definitionPrefix: 'useLabel'
-                }
-            }
-        ]);
-    }
 
     await server.register([
         {
@@ -49,12 +28,12 @@ const init = async () => {
                 prefix: '/users'
             }
         },
-        {
-            plugin: require('./web/profile/routes'),
-            routes: {
-                prefix: '/profiles'
-            }
-        },
+        // {
+        //     plugin: require('./web/profile/routes'),
+        //     routes: {
+        //         prefix: '/profiles'
+        //     }
+        // },
         {
             plugin: require('./web/category/routes'),
             routes: {
@@ -90,26 +69,11 @@ const init = async () => {
         }
     });
 
-    server.route({
-        method: 'GET',
-        path: '/',
-        handler: (req, h) => {
-            return h.redirect(`https://${req.info.host}/documentation`);
-        },
-        options: {
-            auth: false,
-            validate: {
-                payload: false,
-                query: false
-            }
-        }
-    });
-
     await server.start();
     console.log(`Server running at: ${server.info.uri}`);
 };
 
-process.on('unhandledRejection', (err) => {
+process.on('unhandledRejection', err => {
     console.log(err);
     process.exit(1);
 });

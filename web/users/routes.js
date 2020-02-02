@@ -1,9 +1,22 @@
 const User = require('./controller');
-const Joi = require('joi');
+const Joi = require('@hapi/joi');
 
 module.exports = {
     name: 'user-routes',
     register: async (server, options) => {
+        //  GET /
+        server.route({
+            method: 'GET',
+            path: '/token/{admin?}',
+            handler: User.getAccessToken,
+            options: {
+                auth: false,
+                validate: {
+                    payload: false,
+                    query: false
+                }
+            }
+        });
 
         //  GET /
         server.route({
@@ -22,7 +35,7 @@ module.exports = {
                 }
             }
         });
-        
+
         //  POST /
         server.route({
             method: 'POST',
@@ -36,16 +49,29 @@ module.exports = {
                 },
                 validate: {
                     payload: Joi.object({
-                        name: Joi.string().min(6).trim().required(),
-                        email: Joi.string().email().trim().required(),
-                        password: Joi.string().min(6).trim().required(),
-                        account_type: Joi.string().alphanum().trim().length(24).required()
+                        name: Joi.string()
+                            .min(6)
+                            .trim()
+                            .required(),
+                        email: Joi.string()
+                            .email()
+                            .trim()
+                            .required(),
+                        password: Joi.string()
+                            .min(6)
+                            .trim()
+                            .required(),
+                        account_type: Joi.string()
+                            .alphanum()
+                            .trim()
+                            .length(24)
+                            .required()
                     }),
                     query: false
                 }
             }
         });
-        
+
         //  GET /{id}
         server.route({
             method: 'GET',
@@ -65,26 +91,26 @@ module.exports = {
         });
 
         //  PUT /{id}
-        server.route({
-            method: 'PUT',
-            path: '/{id}',
-            handler: User.update,
-            options: {
-                auth: {
-                    access: {
-                        scope: ['update:users/id']
-                    }
-                },
-                validate: {
-                    payload: Joi.object({
-                        name: Joi.string().min(6).trim(),
-                        email: Joi.string().email().trim(),
-                        account_type: Joi.string().alphanum().trim().length(24)
-                    }).or(['name', 'email', 'account_type']),
-                    query: false
-                }
-            }
-        });
+        // server.route({
+        //     method: 'PUT',
+        //     path: '/{id}',
+        //     handler: User.update,
+        //     options: {
+        //         auth: {
+        //             access: {
+        //                 scope: ['update:users/id']
+        //             }
+        //         },
+        //         validate: {
+        //             payload: Joi.object({
+        //                 name: Joi.string().min(6).trim(),
+        //                 email: Joi.string().email().trim(),
+        //                 account_type: Joi.string().alphanum().trim().length(24)
+        //             }).or(['name', 'email', 'account_type']),
+        //             query: false
+        //         }
+        //     }
+        // });
 
         // DELETE /{id}
         server.route({
@@ -116,9 +142,18 @@ module.exports = {
                 auth: false,
                 validate: {
                     payload: Joi.object({
-                        name: Joi.string().min(6).trim().required(),
-                        email: Joi.string().email().trim().required(),
-                        password: Joi.string().min(6).trim().required()
+                        name: Joi.string()
+                            .min(6)
+                            .trim()
+                            .required(),
+                        email: Joi.string()
+                            .email()
+                            .trim()
+                            .required(),
+                        password: Joi.string()
+                            .min(6)
+                            .trim()
+                            .required()
                     }),
                     query: false
                 }
@@ -134,8 +169,14 @@ module.exports = {
                 auth: false,
                 validate: {
                     payload: Joi.object({
-                        email: Joi.string().email().trim().required(),
-                        password: Joi.string().min(6).trim().required()
+                        email: Joi.string()
+                            .email()
+                            .trim()
+                            .required(),
+                        password: Joi.string()
+                            .min(6)
+                            .trim()
+                            .required()
                     }),
                     query: false
                 }
@@ -151,8 +192,14 @@ module.exports = {
                 auth: false,
                 validate: {
                     payload: Joi.object({
-                        email: Joi.string().email().trim().required(),
-                        password: Joi.string().min(6).trim().required()
+                        email: Joi.string()
+                            .email()
+                            .trim()
+                            .required(),
+                        password: Joi.string()
+                            .min(6)
+                            .trim()
+                            .required()
                     }),
                     query: false
                 }
@@ -160,4 +207,3 @@ module.exports = {
         });
     }
 };
-

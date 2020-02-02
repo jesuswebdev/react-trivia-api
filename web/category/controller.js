@@ -1,14 +1,17 @@
 'use strict';
 
-const Boom = require('boom');
+const Boom = require('@hapi/boom');
 const Category = require('./model');
 const Question = require('../questions/model');
+const categoriesJSON = require('../../utils/trivia-categories.json');
 
 exports.create = async (req, h) => {
     let createdCategory = null;
 
     try {
-        let duplicate = await Category.findOne({ title: { $regex: req.payload.title, $options: 'i' } });
+        let duplicate = await Category.findOne({
+            title: { $regex: req.payload.title, $options: 'i' }
+        });
         if (duplicate) {
             return Boom.conflict('Ya existe una categoria con ese nombre');
         }
@@ -24,8 +27,8 @@ exports.find = async (req, h) => {
     let foundCategories = null;
     let projection = {};
 
-    if (!req.auth.credentials) {
-        projection = { title: true };
+    if (!req.auth.credentials || req.auth.credentials.role === 'guest') {
+        projection = { name: true };
     }
 
     try {
@@ -34,7 +37,10 @@ exports.find = async (req, h) => {
         return Boom.internal();
     }
 
-    return { categories: foundCategories, categories_count: foundCategories.length };
+    return {
+        categories: foundCategories,
+        categories_count: foundCategories.length
+    };
 };
 
 exports.findById = async (req, h) => {
@@ -56,7 +62,11 @@ exports.update = async (req, h) => {
     let updatedCategory = null;
 
     try {
-        updatedCategory = await Category.findByIdAndUpdate(req.params.id, { $set: { ...req.payload } }, { new:true });
+        updatedCategory = await Category.findByIdAndUpdate(
+            req.params.id,
+            { $set: { ...req.payload } },
+            { new: true }
+        );
         if (!updatedCategory) {
             return Boom.notFound();
         }
@@ -82,18 +92,32 @@ exports.remove = async (req, h) => {
     return h.response();
 };
 
-exports.incrementQuestionCount = async (categoryId, difficulty) => {
-    
-    let incOptions = { question_count: 1 };
-    incOptions[`total_${difficulty}_questions`] = 1;
-
+exports.setQuestionCount = async categoryId => {
     try {
-        await Category.findByIdAndUpdate(categoryId, { $inc: incOptions });
+        const categoryQuestions = await Question.countDocuments({
+            category: categoryId
+        });
+        await Category.findByIdAndUpdate(categoryId, {
+            $set: { question_count: categoryQuestions }
+        });
     } catch (error) {
         console.log(error);
     }
 };
 
-exports.decrementQuestionCount = async (categoryId) => {
-    await Category.findByIdAndUpdate(categoryId, { $inc: { question_count: -1 } });
+exports.decrementQuestionCount = async categoryId => {
+    await Category.findByIdAndUpdate(categoryId, {
+        $inc: { question_count: -1 }
+    });
+};
+
+exports.seed = async (req, h) => {
+    try {
+        const categories = categoriesJSON.map(c => ({ name: c.title }));
+        Promise.all(categories.map(c => Category.create(c)));
+        return h.response();
+    } catch (error) {
+        console.log(error);
+        return Boom.internal();
+    }
 };
