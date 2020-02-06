@@ -9,13 +9,14 @@ exports.create = async (req, h) => {
 
     try {
         let duplicate = await Category.findOne({
-            title: { $regex: req.payload.title, $options: 'i' }
+            name: { $regex: req.payload.name, $options: 'i' }
         });
         if (duplicate) {
             return Boom.conflict('Ya existe una categoria con ese nombre');
         }
         createdCategory = await Category(req.payload).save();
-    } catch (err) {
+    } catch (error) {
+        console.log(error);
         return Boom.internal();
     }
 
@@ -23,7 +24,7 @@ exports.create = async (req, h) => {
 };
 
 exports.find = async (req, h) => {
-    let foundCategories = null;
+    let foundCategories = [];
     let projection = {};
 
     if (!req.auth.credentials || req.auth.credentials.role === 'guest') {
@@ -32,14 +33,12 @@ exports.find = async (req, h) => {
 
     try {
         foundCategories = await Category.find({}, projection);
-    } catch (err) {
+    } catch (error) {
+        console.log(error);
         return Boom.internal();
     }
 
-    return {
-        categories: foundCategories,
-        categories_count: foundCategories.length
-    };
+    return h.response(foundCategories);
 };
 
 exports.findById = async (req, h) => {
@@ -70,6 +69,7 @@ exports.update = async (req, h) => {
             return Boom.notFound();
         }
     } catch (error) {
+        console.log(error);
         return Boom.internal();
     }
 
@@ -85,6 +85,7 @@ exports.remove = async (req, h) => {
             return Boom.notFound();
         }
     } catch (error) {
+        console.log(error);
         return Boom.internal();
     }
 

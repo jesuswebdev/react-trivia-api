@@ -43,35 +43,14 @@ module.exports = {
                     let credentials = null;
 
                     try {
-                        let foundUser = null;
                         const guest = payload.guest;
-                        let permissions = [];
-
-                        if (!guest) {
-                            foundUser = await User.findById(
-                                payload.id
-                            ).populate('account_type', 'permissions role');
-
-                            if (!foundUser) {
-                                return Boom.unauthorized(
-                                    'Error de autenticación. El usuario no existe'
-                                );
-                            }
-                            permissions = foundUser.account_type.permissions;
-                        }
                         credentials = {
                             id: payload.id,
-                            role: guest ? 'guest' : foundUser.account_type.role,
-                            scope: guest
-                                ? payload.permissions
-                                : [
-                                      ...permissions.create,
-                                      ...permissions.read,
-                                      ...permissions.update,
-                                      ...permissions.delete
-                                  ]
+                            role: guest ? 'guest' : payload.role,
+                            scope: payload.permissions
                         };
                     } catch (error) {
+                        console.log(error);
                         return Boom.internal();
                     }
 

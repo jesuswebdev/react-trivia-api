@@ -211,7 +211,10 @@ exports.top = async (req, h) => {
 exports.new = async (req, h) => {
     const user = req.payload.name;
     try {
-        const game = await Game.create({ user });
+        const game = await Game.create({
+            user,
+            ip_address: req.info.remoteAddress
+        });
         let token = await Iron.seal(
             {
                 iat: new Date().getTime(),

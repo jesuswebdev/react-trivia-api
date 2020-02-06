@@ -114,53 +114,15 @@ exports.login = async (req, h) => {
 
     try {
         foundUser = await User.findOne({ email: req.payload.email }).populate(
-            'account_type'
-        );
-        if (!foundUser) {
-            return Boom.badData(
-                'Combinacion de correo electrónico/contraseña incorrectos'
-            );
-        }
-        let same = await foundUser.validatePassword(
-            req.payload.password,
-            foundUser.password
-        );
-        if (!same) {
-            return Boom.badData(
-                'Combinacion de correo electrónico/contraseña incorrectos'
-            );
-        }
-    } catch (err) {
-        return Boom.internal();
-    }
-
-    const tokenUser = {
-        id: foundUser._id
-    };
-
-    let token = await Iron.seal(tokenUser, iron.password, Iron.defaults);
-
-    foundUser = {
-        id: foundUser._id,
-        name: foundUser.name,
-        email: foundUser.email
-    };
-
-    return { user: foundUser, token };
-};
-
-exports.adminLogin = async (req, h) => {
-    let foundUser = null;
-
-    try {
-        foundUser = await User.findOne({ email: req.payload.email }).populate(
             'account_type',
-            'role'
+            'role permissions'
         );
         if (!foundUser) {
-            return Boom.badData('Combinacion de email/contraseña incorrectos');
+            return Boom.badData(
+                'Las credenciales no coinciden con un usuario en nuestro sistema'
+            );
         }
-        if (foundUser.account_type.role !== 'administrador') {
+        if (foundUser.account_type.role !== 'admin') {
             return Boom.notFound('El usuario no existe');
         }
         let same = await foundUser.validatePassword(
@@ -168,14 +130,18 @@ exports.adminLogin = async (req, h) => {
             foundUser.password
         );
         if (!same) {
-            return Boom.badData('Combinacion de email/contraseña incorrectos');
+            return Boom.badData(
+                'Las credenciales no coinciden con un usuario en nuestro sistema'
+            );
         }
     } catch (err) {
+        console.log(err);
         return Boom.internal();
     }
-
     const tokenUser = {
-        id: foundUser._id
+        id: foundUser._id,
+        role: foundUser.account_type.role,
+        permissions: foundUser.account_type.permissions
     };
 
     let token = await Iron.seal(tokenUser, iron.password, Iron.defaults);
@@ -186,29 +152,7 @@ exports.adminLogin = async (req, h) => {
         email: foundUser.email
     };
 
-    return { user: foundUser, token };
-};
-
-exports.register = async (req, h) => {
-    let foundUser = await User.findOne({ email: req.payload.email });
-    if (foundUser) {
-        return Boom.conflict('El correo electrónico ya esta en uso');
-    }
-
-    let createdUser = null;
-    try {
-        createdUser = await User({
-            ...req.payload,
-            account_type: db.user_id,
-            ip_address: req.info.remoteAddress
-        }).save();
-    } catch (err) {
-        return Boom.internal();
-    }
-
-    return h
-        .response({ user: createdUser._id.toString(), name: createdUser.name })
-        .code(201);
+    return { token };
 };
 
 exports.getAccessToken = async (req, h) => {
