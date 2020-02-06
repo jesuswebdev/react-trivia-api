@@ -95,7 +95,8 @@ module.exports = {
                             .min(1),
                         offset: Joi.number()
                             .integer()
-                            .min(1)
+                            .min(1),
+                        search: Joi.string().min(1)
                     }
                 }
             }
@@ -119,70 +120,57 @@ module.exports = {
             }
         });
 
-        // //  PUT /{id}
-        // server.route({
-        //     method: 'PUT',
-        //     path: '/{id}',
-        //     handler: Question.update,
-        //     options: {
-        //         auth: {
-        //             access: {
-        //                 scope: ['update:questions/id']
-        //             }
-        //         },
-        //         validate: {
-        //             payload: Joi.object({
-        //                 title: Joi.string()
-        //                     .trim()
-        //                     .min(8),
-        //                 options: Joi.array()
-        //                     .length(4)
-        //                     .items(
-        //                         Joi.object({
-        //                             text: Joi.string()
-        //                                 .trim()
-        //                                 .required(),
-        //                             correct_answer: Joi.boolean().required()
-        //                         })
-        //                     ),
-        //                 category: Joi.string()
-        //                     .alphanum()
-        //                     .trim()
-        //                     .length(24),
-        //                 difficulty: Joi.string().only([
-        //                     'easy',
-        //                     'medium',
-        //                     'hard'
-        //                 ]),
-        //                 tags: Joi.array()
-        //                     .min(1)
-        //                     .items(
-        //                         Joi.string()
-        //                             .min(4)
-        //                             .strict()
-        //                     ),
-        //                 did_you_know: Joi.string()
-        //                     .min(8)
-        //                     .optional(),
-        //                 link: Joi.string()
-        //                     .regex(/^http/)
-        //                     .min(10)
-        //                     .optional()
-        //             })
-        //                 .options({ stripUnknown: true })
-        //                 .or([
-        //                     'title',
-        //                     'options',
-        //                     'category',
-        //                     'difficulty',
-        //                     'tags',
-        //                     'did_you_know',
-        //                     'link'
-        //                 ]),
-        //             query: false
-        //         }
-        //     }
-        // });
+        //  PATCH /{id}
+        server.route({
+            method: 'PATCH',
+            path: '/{id}',
+            handler: Question.update,
+            options: {
+                auth: {
+                    access: {
+                        scope: ['update:questions/id']
+                    }
+                },
+                validate: {
+                    payload: Joi.object({
+                        title: Joi.string()
+                            .trim()
+                            .min(8),
+                        options: Joi.array()
+                            .length(4)
+                            .items(
+                                Joi.object({
+                                    text: Joi.string()
+                                        .trim()
+                                        .required(),
+                                    correct: Joi.boolean().required(),
+                                    option_id: Joi.number()
+                                        .integer()
+                                        .min(0)
+                                        .max(3)
+                                }).options({ stripUnknown: true })
+                            ),
+                        category: Joi.string()
+                            .alphanum()
+                            .trim()
+                            .length(24),
+                        state: Joi.string().allow(
+                            'approved',
+                            'rejected',
+                            'pending'
+                        ),
+                        did_you_know: Joi.string()
+                            .min(8)
+                            .optional(),
+                        link: Joi.string()
+                            .regex(/^http/)
+                            .min(10)
+                            .optional()
+                    }).options({ stripUnknown: true }),
+                    query: false
+                }
+            }
+        });
 
         // //  DELETE  /{id}
         // server.route({
@@ -231,34 +219,34 @@ module.exports = {
         //     }
         // });
 
-        // //  GET /suggestions
-        // server.route({
-        //     method: 'GET',
-        //     path: '/suggestions',
-        //     handler: Question.find,
-        //     options: {
-        //         auth: {
-        //             access: {
-        //                 scope: ['read:suggestions']
-        //             }
-        //         },
-        //         validate: {
-        //             payload: false,
-        //             query: {
-        //                 category: Joi.string()
-        //                     .trim()
-        //                     .alphanum()
-        //                     .length(24),
-        //                 limit: Joi.number()
-        //                     .integer()
-        //                     .min(1),
-        //                 offset: Joi.number()
-        //                     .integer()
-        //                     .min(1)
-        //             }
-        //         }
-        //     }
-        // });
+        //  GET /suggestions
+        server.route({
+            method: 'GET',
+            path: '/pending',
+            handler: Question.find,
+            options: {
+                auth: {
+                    access: {
+                        scope: ['read:questions/pending']
+                    }
+                },
+                validate: {
+                    payload: false,
+                    query: {
+                        category: Joi.string()
+                            .trim()
+                            .alphanum()
+                            .length(24),
+                        limit: Joi.number()
+                            .integer()
+                            .min(1),
+                        offset: Joi.number()
+                            .integer()
+                            .min(1)
+                    }
+                }
+            }
+        });
 
         // //  GET /suggestions/count
         // server.route({

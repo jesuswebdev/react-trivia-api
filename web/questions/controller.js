@@ -54,18 +54,18 @@ exports.create = async (req, h) => {
 
 exports.find = async (req, h) => {
     let foundQuestions = null;
-    let totalResults = null;
     let query = { state: 'approved' };
     let limit = 0;
     let skip = 0;
 
+    if (req.query.search) {
+        query.title = { $regex: req.query.search, $options: 'i' };
+    }
+
     if (req.query.category) {
         query.category = req.query.category;
     }
-    if (req.query.difficulty) {
-        query.difficulty = req.query.difficulty;
-    }
-    if (req.path === '/questions/suggestions') {
+    if (req.path === '/questions/pending') {
         query.state = 'pending';
     }
     if (req.query.offset) {
@@ -79,13 +79,13 @@ exports.find = async (req, h) => {
         foundQuestions = await Question.find(query)
             .skip(skip)
             .limit(limit)
-            .populate('category', 'title');
-        totalResults = await Question.countDocuments(query);
+            .populate('category', 'name');
     } catch (error) {
+        console.log(error);
         return Boom.internal();
     }
 
-    return { results: foundQuestions, results_count: totalResults };
+    return h.response(foundQuestions);
 };
 
 exports.findById = async (req, h) => {
@@ -110,7 +110,7 @@ exports.update = async (req, h) => {
     let updatedQuestion = null;
     if (req.payload.options) {
         let correctAnswers = req.payload.options.reduce(
-            (p, c) => (c.correct_answer ? p + 1 : p),
+            (p, c) => (c.correct ? p + 1 : p),
             0
         );
         if (correctAnswers > 1) {
@@ -129,19 +129,24 @@ exports.update = async (req, h) => {
     }
 
     try {
+        if ((req.payload || {}).state === 'rejected') {
+            await Question.findByIdAndRemove(req.params.id);
+            return h.response();
+        }
         updatedQuestion = await Question.findByIdAndUpdate(
             req.params.id,
             { $set: { ...req.payload } },
             { new: true }
-        );
+        ).populate('category', 'name');
         if (!updatedQuestion) {
             return Boom.notFound('No se encontro el recurso');
         }
     } catch (error) {
+        console.log(error);
         return Boom.internal();
     }
 
-    return { question: updatedQuestion._id.toString() };
+    return updatedQuestion;
 };
 
 exports.remove = async (req, h) => {

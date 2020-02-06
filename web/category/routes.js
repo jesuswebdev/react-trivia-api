@@ -17,7 +17,7 @@ module.exports = {
                 },
                 validate: {
                     payload: Joi.object({
-                        title: Joi.string()
+                        name: Joi.string()
                             .trim()
                             .min(4)
                             .required()
@@ -70,54 +70,54 @@ module.exports = {
         //     }
         // });
 
-        // //  PUT /{id}
-        // server.route({
-        //     method: 'PUT',
-        //     path: '/{id}',
-        //     handler: Category.update,
-        //     options: {
-        //         auth: {
-        //             access: {
-        //                 scope: ['update:category/id']
-        //             }
-        //         },
-        //         validate: {
-        //             payload: Joi.object({
-        //                 title: Joi.string()
-        //                     .trim()
-        //                     .min(4)
-        //                     .required()
-        //             }),
-        //             query: false
-        //         }
-        //     }
-        // });
+        //  PATCH /{id}
+        server.route({
+            method: 'PATCH',
+            path: '/{id}',
+            handler: Category.update,
+            options: {
+                auth: {
+                    access: {
+                        scope: ['update:category/id']
+                    }
+                },
+                validate: {
+                    payload: Joi.object({
+                        name: Joi.string()
+                            .trim()
+                            .min(4)
+                            .required()
+                    }),
+                    query: false
+                }
+            }
+        });
 
-        // //  DELETE  /{id}
-        // server.route({
-        //     method: 'DELETE',
-        //     path: '/{id}',
-        //     handler: Category.remove,
-        //     options: {
-        //         response: {
-        //             emptyStatusCode: 204
-        //         },
-        //         auth: {
-        //             access: {
-        //                 scope: ['delete:category/id']
-        //             }
-        //         },
-        //         validate: {
-        //             payload: false,
-        //             params: Joi.object({
-        //                 id: Joi.string()
-        //                     .trim()
-        //                     .min(4)
-        //                     .required()
-        //             }),
-        //             query: false
-        //         }
-        //     }
-        // });
+        //  DELETE  /{id}
+        server.route({
+            method: 'DELETE',
+            path: '/{id}',
+            handler: Category.remove,
+            options: {
+                response: {
+                    emptyStatusCode: 204
+                },
+                auth: {
+                    access: {
+                        scope: ['delete:category/id']
+                    }
+                },
+                validate: {
+                    payload: false,
+                    params: Joi.object({
+                        id: Joi.string()
+                            .trim()
+                            .min(4)
+                            .required()
+                    }),
+                    query: false
+                }
+            }
+        });
     }
 };

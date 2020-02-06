@@ -134,31 +134,31 @@ module.exports = {
         });
 
         //register
-        server.route({
-            method: 'POST',
-            path: '/register',
-            handler: User.register,
-            options: {
-                auth: false,
-                validate: {
-                    payload: Joi.object({
-                        name: Joi.string()
-                            .min(6)
-                            .trim()
-                            .required(),
-                        email: Joi.string()
-                            .email()
-                            .trim()
-                            .required(),
-                        password: Joi.string()
-                            .min(6)
-                            .trim()
-                            .required()
-                    }),
-                    query: false
-                }
-            }
-        });
+        // server.route({
+        //     method: 'POST',
+        //     path: '/register',
+        //     handler: User.register,
+        //     options: {
+        //         auth: false,
+        //         validate: {
+        //             payload: Joi.object({
+        //                 name: Joi.string()
+        //                     .min(6)
+        //                     .trim()
+        //                     .required(),
+        //                 email: Joi.string()
+        //                     .email()
+        //                     .trim()
+        //                     .required(),
+        //                 password: Joi.string()
+        //                     .min(6)
+        //                     .trim()
+        //                     .required()
+        //             }),
+        //             query: false
+        //         }
+        //     }
+        // });
 
         // login
         server.route({
@@ -166,7 +166,11 @@ module.exports = {
             path: '/login',
             handler: User.login,
             options: {
-                auth: false,
+                auth: {
+                    access: {
+                        scope: ['admin:login']
+                    }
+                },
                 validate: {
                     payload: Joi.object({
                         email: Joi.string()
@@ -183,27 +187,27 @@ module.exports = {
             }
         });
 
-        //admin login
-        server.route({
-            method: 'POST',
-            path: '/admin/login',
-            handler: User.adminLogin,
-            options: {
-                auth: false,
-                validate: {
-                    payload: Joi.object({
-                        email: Joi.string()
-                            .email()
-                            .trim()
-                            .required(),
-                        password: Joi.string()
-                            .min(6)
-                            .trim()
-                            .required()
-                    }),
-                    query: false
-                }
-            }
-        });
+        // //admin login
+        // server.route({
+        //     method: 'POST',
+        //     path: '/admin/login',
+        //     handler: User.adminLogin,
+        //     options: {
+        //         auth: false,
+        //         validate: {
+        //             payload: Joi.object({
+        //                 email: Joi.string()
+        //                     .email()
+        //                     .trim()
+        //                     .required(),
+        //                 password: Joi.string()
+        //                     .min(6)
+        //                     .trim()
+        //                     .required()
+        //             }),
+        //             query: false
+        //         }
+        //     }
+        // });
     }
 };
