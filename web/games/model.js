@@ -34,7 +34,8 @@ const GameSchema = new Schema(
         active: { type: Boolean, default: true },
         // state: { type: String, enum: ['playing', 'finished'], required: true },
         current_question: { type: mongoose.Schema.ObjectId, ref: 'Question' },
-        createdAt: { type: Number, default: new Date().getTime() }
+        createdAt: { type: Number, default: new Date().getTime() },
+        ip_address: { type: String, default: '' }
     },
     { timestamps: true }
 );
