@@ -1,245 +1,285 @@
-'use strict';
+"use strict";
 
-process.env.NODE_ENV = 'test';
+process.env.NODE_ENV = "test";
 process.env.PORT = 4000;
 
-const { test, experiment, before, beforeEach, after } = exports.lab = require('lab').script();
-const { expect } = require('code');
-const server = require('../../server');
-const Category = require('mongoose').model('Category');
+const Lab = require("@hapi/lab");
+const { expect } = require("@hapi/code");
 
-experiment('Category Route Test: ', () => {
-    let options = null;
+const { test, experiment, before, beforeEach, after, afterEach } =
+  (exports.lab = Lab.script());
+const { init } = require("../../server");
+
+experiment("Category Route Test: ", () => {
+  let server;
+  let options = null;
+
+  beforeEach(async () => {
+    options = null;
+    server = await init();
+  });
+
+  afterEach(async () => {
+    await server.stop();
+  });
+
+  experiment("POST /category", () => {
+    beforeEach(async () => {
+      const CategoryModel =
+        server.plugins.mongoose.connection.model("Category");
+      await CategoryModel.deleteMany({});
+
+      options = {
+        method: "POST",
+        url: "/category",
+        auth: {
+          strategy: "userAuth",
+          credentials: {
+            id: "abc123",
+            role: "admin",
+            scope: ["create:category"]
+          }
+        },
+        payload: { name: "Economia" }
+      };
+    });
+
+    test("allow the admin to create a category", async () => {
+      const { statusCode } = await server.inject(options);
+      expect(statusCode).to.equal(201);
+    });
+
+    test("returns error 403 when the user is not authorized", async () => {
+      options.auth.credentials.scope = [];
+      const { statusCode } = await server.inject(options);
+      expect(statusCode).to.equal(403);
+    });
+
+    test("returns error when the title is too short", async () => {
+      options.payload.title = "asd";
+      const { statusCode } = await server.inject(options);
+      expect(statusCode).to.equal(400);
+    });
+
+    test("returns error when there is no title", async () => {
+      options.payload = {};
+      const { statusCode } = await server.inject(options);
+      expect(statusCode).to.equal(400);
+    });
+
+    test("returns error 409 when there is a duplicate category in DB", async () => {
+      const CategoryModel =
+        server.plugins.mongoose.connection.model("Category");
+      await CategoryModel.create({
+        name: "Economia"
+      });
+      const { statusCode } = await server.inject(options);
+      expect(statusCode).to.equal(409);
+    });
+
+    test("returns the created category", async () => {
+      const { statusCode, result } = await server.inject(options);
+      expect(statusCode).to.equal(201);
+      expect(result.name).to.be.a.string();
+      expect(result._id).to.be.an.object();
+      expect(result.question_count).to.be.a.number();
+      expect(result.createdAt).to.be.a.date();
+    });
+  });
+
+  experiment("GET /category", () => {
+    beforeEach(async () => {
+      const CategoryModel =
+        server.plugins.mongoose.connection.model("Category");
+      await CategoryModel.deleteMany({});
+      await CategoryModel.create({ name: "Games" });
+
+      options = {
+        method: "GET",
+        url: "/category",
+        auth: {
+          strategy: "userAuth",
+          credentials: {
+            id: "abc123",
+            role: "admin",
+            scope: ["read:category"]
+          }
+        }
+      };
+    });
+
+    test("success when authorized", async () => {
+      const { statusCode } = await server.inject(options);
+      expect(statusCode).to.equal(200);
+    });
+
+    test("returns error 403 when not authorized", async () => {
+      options.auth.credentials = {};
+      const { statusCode } = await server.inject(options);
+      expect(statusCode).to.equal(403);
+    });
+
+    test("returns an array of categories", async () => {
+      const { statusCode, result } = await server.inject(options);
+      expect(statusCode).to.equal(200);
+      expect(result).to.be.an.array();
+      result.map(c => {
+        expect(c.name).to.exist().and.to.be.a.string();
+        expect(c.question_count).to.exist().and.to.be.a.number();
+        expect(c.createdAt).to.exist().and.to.be.a.date();
+        expect(c._id).to.exist().and.to.be.an.object();
+      });
+    });
+  });
+
+  // experiment("GET /category/{id}", () => {
+  //   let catId = null;
+  //   beforeEach(async () => {
+  //     const CategoryModel =
+  //       server.plugins.mongoose.connection.model("Category");
+  //     await CategoryModel.deleteMany({});
+  //     const { _id } = await CategoryModel.create({ name: "Games" });
+  //     catId = _id.toString();
+  //     options = {
+  //       method: "GET",
+  //       url: "/category/" + catId,
+  //       auth: {
+  //         strategy: "userAuth",
+  //         credentials: {
+  //           id: "abc123",
+  //           role: "user",
+  //           scope: ["read:category/id"]
+  //         }
+  //       }
+  //     };
+  //   });
+
+  //   test("success when authorized", async () => {
+  //     const { statusCode } = await server.inject(options);
+  //     expect(statusCode).to.equal(200);
+  //   });
+
+  //   test("returns error 403 when not authorized", async () => {
+  //     options.credentials = {};
+  //     const { statusCode } = await server.inject(options);
+  //     expect(statusCode).to.equal(403);
+  //   });
+
+  //   test("returns error 404 when category not found", async () => {
+  //     const CategoryModel =
+  //       server.plugins.mongoose.connection.model("Category");
+  //     await CategoryModel.findByIdAndDelete({ _id: catId });
+  //     const { statusCode } = await server.inject(options);
+  //     expect(statusCode).to.equal(404);
+  //   });
+
+  //   test("returns a category object", async () => {
+  //     const { statusCode, result } = await server.inject(options);
+  //     expect(statusCode).to.equal(200);
+  //     expect(result.title).to.exist().and.to.be.a.string();
+  //     expect(result.question_count).to.exist().and.to.be.a.number();
+  //     expect(result.createdAt).to.exist().and.to.be.a.date();
+  //     expect(result._id).to.exist().and.to.be.an.object();
+  //   });
+  // });
+
+  experiment("PATCH /category/{id}", () => {
+    let catId = null;
 
     beforeEach(async () => {
-        options = null;
+      const CategoryModel =
+        server.plugins.mongoose.connection.model("Category");
+      await CategoryModel.deleteMany({});
+      const { _id } = await CategoryModel.create({ name: "Games" });
+      catId = _id.toString();
+      options = {
+        method: "PATCH",
+        url: "/category/" + catId,
+        auth: {
+          strategy: "userAuth",
+          credentials: {
+            id: "abc123",
+            role: "admin",
+            scope: ["update:category/id"]
+          }
+        },
+        payload: {
+          name: "Books"
+        }
+      };
     });
 
-    experiment('POST /category', () => {
-
-        beforeEach(async () => {
-            await Category.deleteMany({});
-
-            options = {
-                method: 'POST',
-                url: '/category',
-                credentials: {
-                    scope: ['create:category']
-                },
-                payload: {
-                    title: 'Economia'
-                }
-            };
-        });
-
-        test('allow the admin to create a category', async () => {
-            const {statusCode} = await server.inject(options);
-            expect(statusCode).to.equal(201);
-        });
-
-        test('returns error 403 when the user is not authorized', async () => {
-            options.credentials.scope = [];
-            const {statusCode} = await server.inject(options);
-            expect(statusCode).to.equal(403);
-        });
-
-        test('returns error when the title is too short', async () => {
-            options.payload.title = 'asd';
-            const {statusCode} = await server.inject(options);
-            expect(statusCode).to.equal(400);
-        });
-
-        test('returns error when there is no title', async () => {
-            options.payload = {};
-            const {statusCode} = await server.inject(options);
-            expect(statusCode).to.equal(400);
-        });
-
-        test('returns error 409 when there is a duplicate category in DB', async () => {
-            await Category({
-                title: 'Economia'
-            }).save();
-            const {statusCode} = await server.inject(options);
-            expect(statusCode).to.equal(409);
-        });
-
-        test('returns the created category', async () => {
-            const {statusCode, result} = await server.inject(options);
-            expect(statusCode).to.equal(201);
-            expect(result.title).to.be.a.string();
-            expect(result._id).to.be.an.object();
-            expect(result.question_count).to.be.a.number();
-            expect(result.createdAt).to.be.a.date();
-        });
+    test("updates category when authorized", async () => {
+      const { statusCode } = await server.inject(options);
+      expect(statusCode).to.equal(200);
     });
 
-    experiment('GET /category', () => {
-        beforeEach(async () => {
-            await Category.deleteMany({});
-            await Category({ title: 'Games' }).save();
-
-            options = {
-                method: 'GET',
-                url: '/category',
-                credentials: {
-                    scope: ['read:category']
-                }
-            };
-        });
-
-        test('success when authorized', async () => {
-            const {statusCode} = await server.inject(options);
-            expect(statusCode).to.equal(200);
-        });
-
-        test('returns error 403 when not authorized', async () => {
-            options.credentials = {};
-            const {statusCode} = await server.inject(options);
-            expect(statusCode).to.equal(403);
-        });
-
-        test('returns an array of categories', async () => {
-            const {statusCode, result} = await server.inject(options);
-            expect(statusCode).to.equal(200);
-            expect(result).to.be.an.object();
-            expect(result).to.contain(['categories', 'categories_count']);
-            expect(result.categories).to.be.an.array();
-            result.categories.map(c => {
-                expect(c.title).to.exist().and.to.be.a.string();
-                expect(c.question_count).to.exist().and.to.be.a.number();
-                expect(c.createdAt).to.exist().and.to.be.a.date();
-                expect(c._id).to.exist().and.to.be.an.object();
-            });
-        });
-
-        test('returns the number of categories found', async () => {
-            const {statusCode, result: { categories_count }} = await server.inject(options);
-            expect(statusCode).to.equal(200);
-            expect(categories_count).to.exist().and.to.be.a.number();
-        });
+    test("returns error 403 when not authorized", async () => {
+      options.auth.credentials = {};
+      const { statusCode } = await server.inject(options);
+      expect(statusCode).to.equal(403);
     });
 
-    experiment('GET /category/{id}', () => {
-        let catId = null;
-        beforeEach(async () => {
-            await Category.deleteMany({});
-            const { _id } = await Category({ title: 'Games' }).save();
-            catId = _id.toString();
-            options = {
-                method: 'GET',
-                url: '/category/' + catId,
-                credentials: {
-                    scope: ['read:category/id']
-                }
-            };
-        });
-
-        test('success when authorized', async () => {
-            const {statusCode} = await server.inject(options);
-            expect(statusCode).to.equal(200);
-        });
-
-        test('returns error 403 when not authorized', async () => {
-            options.credentials = {};
-            const {statusCode} = await server.inject(options);
-            expect(statusCode).to.equal(403);
-        });
-
-        test('returns error 404 when category not found', async () => {
-            await Category.deleteOne({ _id : catId });
-            const {statusCode} = await server.inject(options);
-            expect(statusCode).to.equal(404);
-        });
-
-        test('returns a category object', async () => {
-            const {statusCode, result} = await server.inject(options);
-            expect(statusCode).to.equal(200);
-            expect(result.title).to.exist().and.to.be.a.string();
-            expect(result.question_count).to.exist().and.to.be.a.number();
-            expect(result.createdAt).to.exist().and.to.be.a.date();
-            expect(result._id).to.exist().and.to.be.an.object();
-        });
-
+    test("returns error 404 when the category was not found", async () => {
+      const CategoryModel =
+        server.plugins.mongoose.connection.model("Category");
+      await CategoryModel.findByIdAndDelete(catId);
+      const { statusCode } = await server.inject(options);
+      expect(statusCode).to.equal(404);
     });
 
-    experiment('PUT /category/{id}', () => {
-        let catId = null;
+    test("returns the updated category", async () => {
+      const { statusCode, result } = await server.inject(options);
+      expect(statusCode).to.equal(200);
+      expect(result.name)
+        .to.be.a.string()
+        .and.to.be.equal(options.payload.name);
+      expect(result._id).to.be.an.object();
+      expect(result.question_count).to.be.a.number();
+      expect(result.createdAt).to.be.a.date();
+    });
+  });
 
-        beforeEach(async () => {
-            await Category.deleteMany({});
-            const { _id } = await Category({ title: 'Games' }).save();
-            catId = _id.toString();
-            options = {
-                method: 'PUT',
-                url: '/category/' + catId,
-                credentials: {
-                    scope: ['update:category/id']
-                },
-                payload: {
-                    title: 'Books'
-                }
-            };
-        });
+  experiment("DELETE /category/{id}", () => {
+    let catId = null;
 
-        test('updates category when authorized', async () => {
-            const {statusCode} = await server.inject(options);
-            expect(statusCode).to.equal(200);
-        });
-
-        test('returns error 403 when not authorized', async () => {
-            options.credentials = {};
-            const {statusCode} = await server.inject(options);
-            expect(statusCode).to.equal(403);
-        });
-
-        test('returns error 404 when the category was not found', async () => {
-            await Category.deleteOne({ _id: catId });
-            const {statusCode} = await server.inject(options);
-            expect(statusCode).to.equal(404);
-        });
-
-        test('returns the updated category', async () => {
-            const {statusCode, result} = await server.inject(options);
-            expect(statusCode).to.equal(200);
-            expect(result.title).to.be.a.string().and.to.be.equal(options.payload.title);
-            expect(result._id).to.be.an.object();
-            expect(result.question_count).to.be.a.number();
-            expect(result.createdAt).to.be.a.date();
-        });
+    beforeEach(async () => {
+      const CategoryModel =
+        server.plugins.mongoose.connection.model("Category");
+      await CategoryModel.deleteMany({});
+      const { _id } = await CategoryModel.create({ name: "Games" });
+      catId = _id.toString();
+      options = {
+        method: "DELETE",
+        url: "/category/" + catId,
+        auth: {
+          strategy: "userAuth",
+          credentials: {
+            id: "abc123",
+            role: "admin",
+            scope: ["delete:category/id"]
+          }
+        }
+      };
     });
 
-    experiment('DELETE /category/{id}', () => {
-        let catId = null;
-
-        beforeEach(async () => {
-            await Category.deleteMany({});
-            const { _id } = await Category({ title: 'Games' }).save();
-            catId = _id.toString();
-            options = {
-                method: 'DELETE',
-                url: '/category/' + catId,
-                credentials: {
-                    scope: ['delete:category/id']
-                }
-            };
-        });
-
-        test('deletes category when authorized', async () => {
-            const {statusCode} = await server.inject(options);
-            expect(statusCode).to.equal(204);
-        });
-
-        test('returns error 403 when not authorized', async () => {
-            options.credentials = {};
-            const {statusCode} = await server.inject(options);
-            expect(statusCode).to.equal(403);
-        });
-
-        test('returns error 404 when the category was not found', async () => {
-            await Category.deleteOne({ _id: catId });
-            const {statusCode} = await server.inject(options);
-            expect(statusCode).to.equal(404);
-        });
+    test("deletes category when authorized", async () => {
+      const { statusCode } = await server.inject(options);
+      expect(statusCode).to.equal(204);
     });
 
+    test("returns error 403 when not authorized", async () => {
+      options.auth.credentials = {};
+      const { statusCode } = await server.inject(options);
+      expect(statusCode).to.equal(403);
+    });
+
+    test("returns error 404 when the category was not found", async () => {
+      const CategoryModel =
+        server.plugins.mongoose.connection.model("Category");
+      await CategoryModel.findByIdAndDelete(catId);
+      const { statusCode } = await server.inject(options);
+      expect(statusCode).to.equal(404);
+    });
+  });
 });
