@@ -1,14 +1,12 @@
-'use strict';
-
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+"use strict";
+const Schema = require("mongoose").Schema;
 
 const CategorySchema = new Schema(
-    {
-        name: { type: String, required: true },
-        question_count: { type: Number, default: 0 }
-    },
-    { timestamps: true }
+  {
+    name: { type: String, required: true },
+    question_count: { type: Number, default: 0 }
+  },
+  { timestamps: true }
 );
 
-module.exports = mongoose.model('Category', CategorySchema);
+module.exports = db => db.model("Category", CategorySchema);

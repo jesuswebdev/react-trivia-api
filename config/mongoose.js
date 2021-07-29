@@ -1,31 +1,27 @@
-'use strict';
+"use strict";
 
-const Mongoose = require('mongoose');
-const { db } = require('./config');
+const Mongoose = require("mongoose");
 
-Mongoose.set('useFindAndModify', false);
+module.exports = {
+  name: "mongoose",
+  version: "1.0.0",
+  register: async function (server, options) {
+    try {
+      const db = await Mongoose.createConnection(options.db_uri, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+        useFindAndModify: false
+      });
 
-module.exports = () => {
-    return new Promise(async resolve => {
-        await Mongoose.connect(db.uri, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true
-        });
-        Mongoose.connection.on(
-            'error',
-            console.error.bind(console, 'connection error')
-        );
-        Mongoose.connection.on('open', () => {
-            console.log('Connection with database succeeded');
-        });
-
-        require('../web/profile/model');
-        require('../web/users/model');
-        require('../web/category/model');
-        require('../web/questions/model');
-        require('../web/games/model');
-        console.log('imported all models');
-        console.log('Connection with database succeeded');
-        return resolve();
-    });
+      require("../web/profile/model")(db);
+      require("../web/users/model")(db);
+      require("../web/category/model")(db);
+      require("../web/questions/model")(db);
+      require("../web/games/model")(db);
+      console.log("imported all models");
+      server.expose("connection", db);
+    } catch (error) {
+      throw error;
+    }
+  }
 };
