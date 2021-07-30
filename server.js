@@ -48,7 +48,7 @@ const start = async () => {
   await server.register(plugins);
 
   server.route({
-    method: "GET",
+    method: ["GET", "OPTIONS"],
     path: "/health",
     handler: (req, h) => {
       return { ok: true };

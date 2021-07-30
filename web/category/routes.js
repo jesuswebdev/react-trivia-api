@@ -26,7 +26,7 @@ module.exports = {
 
     //  GET /
     server.route({
-      method: "GET",
+      method: ["GET", "OPTIONS"],
       path: "/",
       handler: Category.find,
       options: {
