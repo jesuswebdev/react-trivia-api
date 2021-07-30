@@ -55,19 +55,24 @@ const plugins = [
 ];
 
 const start = async () => {
-  await server.register(plugins);
+  try {
+    await server.register(plugins);
 
-  server.route({
-    method: "GET",
-    path: "/health",
-    handler: (req, h) => {
-      return { ok: true };
-    },
-    options: { auth: false, validate: { payload: false, query: false } }
-  });
+    server.route({
+      method: "GET",
+      path: "/health",
+      handler: (req, h) => {
+        return { ok: true };
+      },
+      options: { auth: false, validate: { payload: false, query: false } }
+    });
 
-  await server.start();
-  console.log(`Server running at: ${server.info.uri}`);
+    await server.start();
+    console.log(`Server running at: ${server.info.uri}`);
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 };
 
 process.on("unhandledRejection", err => {
