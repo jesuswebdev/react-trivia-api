@@ -9,7 +9,7 @@ const server = Hapi.server({
   port: process.env.PORT || 8080,
   host: "localhost",
   address: "0.0.0.0",
-  routes: { cors: true }
+  routes: { cors: { origin: ["*"] } }
 });
 
 server.validator(require("@hapi/joi"));
