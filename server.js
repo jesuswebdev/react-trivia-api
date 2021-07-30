@@ -9,7 +9,16 @@ const server = Hapi.server({
   port: process.env.PORT || 8080,
   host: "localhost",
   address: "0.0.0.0",
-  routes: { cors: true }
+  routes: {
+    cors: {
+      origin: ["*"],
+      additionalExposedHeaders: [
+        "Access-Control-Request-Headers",
+        "Access-Control-Request-Method"
+      ],
+      additionalHeaders: ["Accept-Encoding", "Accept-Language"]
+    }
+  }
 });
 
 server.validator(require("@hapi/joi"));
@@ -48,7 +57,7 @@ const start = async () => {
   await server.register(plugins);
 
   server.route({
-    method: ["GET", "OPTIONS"],
+    method: "GET",
     path: "/health",
     handler: (req, h) => {
       return { ok: true };
