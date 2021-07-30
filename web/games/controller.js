@@ -197,7 +197,7 @@ exports.top = async (req, h) => {
       }
     )
       .sort({ total_correct_answers: -1, duration: 1 })
-      .limit(100)
+      .limit(10)
       .lean();
 
     const stats = games.map((game, index) => ({
