@@ -12,11 +12,12 @@ const server = Hapi.server({
   routes: {
     cors: {
       origin: ["*"],
-      additionalExposedHeaders: [
+      additionalHeaders: [
+        "Accept-Encoding",
+        "Accept-Language",
         "Access-Control-Request-Headers",
         "Access-Control-Request-Method"
-      ],
-      additionalHeaders: ["Accept-Encoding", "Accept-Language"]
+      ]
     }
   }
 });
