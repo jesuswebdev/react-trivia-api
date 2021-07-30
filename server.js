@@ -16,7 +16,10 @@ const server = Hapi.server({
         "Accept-Encoding",
         "Accept-Language",
         "Access-Control-Request-Headers",
-        "Access-Control-Request-Method"
+        "Access-Control-Request-Method",
+        "Sec-Fetch-Dest",
+        "Sec-Fetch-Mode",
+        "Sec-Fetch-Site"
       ]
     }
   }
