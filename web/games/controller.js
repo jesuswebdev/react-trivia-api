@@ -61,7 +61,7 @@ exports.create = async (req, h) => {
     (prev, curr) => {
       let correct = curr.options.find(
         option => option.option_id === curr.selected_option
-      ).correct_answer;
+      ).correct;
 
       return {
         duration: prev.duration + curr.duration,
@@ -288,7 +288,7 @@ exports.answer = async (req, h) => {
       req
     );
     // update game
-    await Game.findByIdAndUpdate(castToObjectId(token.id), {
+    await GameModel.findByIdAndUpdate(castToObjectId(token.id), {
       $set: {
         ...updatedGame,
         current_question: null
@@ -349,7 +349,7 @@ exports.nextQuestion = async (req, h) => {
       return Boom.badData("Game has a current question");
     }
     // TODO date validation
-    let newQuestion = await getRandomQuestion(token.answered_questions);
+    let newQuestion = await getRandomQuestion(token.answered_questions, req);
 
     // update game
     await GameModel.findByIdAndUpdate(castToObjectId(token.id), {

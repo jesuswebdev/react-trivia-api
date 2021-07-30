@@ -365,24 +365,32 @@ exports.fix = async (req, h) => {
   try {
     const questions = await QuestionModel.find({}).lean();
 
-    await questions.reduce((prevUpdate, question) => {
-      return new Promise(async (resolve, reject) => {
-        try {
-          await prevUpdate;
-          const newOptions = question.options.map(opt => ({
-            text: opt.text,
-            correct: opt.correct_answer,
-            option_id: opt.option_id
-          }));
-          await QuestionModel.findByIdAndUpdate(question._id, {
-            $set: { options: newOptions }
-          });
-          return resolve();
-        } catch (error) {
-          return reject(error);
-        }
-      });
-    }, Promise.resolve());
+    const updates = questions.reduce((acc, question) => {
+      const shouldUpdate = question.options.some(option =>
+        Reflect.has(option, "correct_answer")
+      );
+
+      return acc.concat(
+        shouldUpdate
+          ? {
+              updateOne: {
+                filter: { _id: question._id },
+                update: {
+                  $set: {
+                    options: question.options.map(opt => ({
+                      text: opt.text,
+                      correct: opt.correct_answer,
+                      option_id: opt.option_id
+                    }))
+                  }
+                }
+              }
+            }
+          : []
+      );
+    }, []);
+
+    await QuestionModel.bulkWrite(updates, { ordered: false });
     return h.response();
   } catch (error) {
     console.log(error);
