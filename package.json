@@ -10,7 +10,9 @@
   "author": "jesuswebdev",
   "license": "ISC",
   "dependencies": {
-    "@hapi/hapi": "^19.1.1",
+    "@hapi/hapi": "^20.1.4",
+    "@hapi/iron": "^6.0.0",
+    "@hapi/joi": "^17.1.1",
     "bcryptjs": "^2.4.3",
     "dotenv": "^10.0.0",
     "mongoose": "^5.13.4"
