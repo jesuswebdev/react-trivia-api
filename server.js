@@ -8,8 +8,8 @@ const config = require("./config");
 const server = Hapi.server({
   port: process.env.PORT || 8080,
   host: "localhost",
-  // address: "0.0.0.0",
-  routes: { cors: { origin: ["ignore"] } }
+  address: "0.0.0.0",
+  routes: { cors: true }
 });
 
 server.validator(require("@hapi/joi"));
