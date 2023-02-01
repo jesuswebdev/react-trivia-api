@@ -15,7 +15,7 @@
     "@hapi/joi": "^17.1.1",
     "bcryptjs": "^2.4.3",
     "dotenv": "^10.0.0",
-    "mongoose": "^5.13.4"
+    "mongoose": "^5.13.15"
   },
   "engines": {
     "node": ">= 8.8.1",
